@@ -297,9 +297,22 @@
 
     </div>
 
+
+
+
+    
     <!-- Firebase SDKs -->
     <script type="module">
-        // Firebase মডিউলগুলো ইম্পোর্ট করুন
+        // For Firebase JS SDK v7.20.0 and later, measurementId is optional
+const firebaseConfig = {
+  apiKey: "AIzaSyBcs_LrxMA_aXlZZoQ7SsLztjYU5YktEo8",
+  authDomain: "readingprogressapp.firebaseapp.com",
+  projectId: "readingprogressapp",
+  storageBucket: "readingprogressapp.firebasestorage.app",
+  messagingSenderId: "212134190518",
+  appId: "1:212134190518:web:995a883889f375fc9e7517",
+  measurementId: "G-95XJF5XGB5"
+};
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.6.0/firebase-app.js";
         import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut, onAuthStateChanged, signInWithCustomToken, signInAnonymously } from "https://www.gstatic.com/firebasejs/10.6.0/firebase-auth.js";
         import { getFirestore, doc, collection, query, where, getDocs, setDoc, addDoc, onSnapshot, serverTimestamp, updateDoc, deleteDoc, runTransaction } from "https://www.gstatic.com/firebasejs/10.6.0/firebase-firestore.js";
