@@ -439,13 +439,9 @@
                 db = getFirestore(app);
                 auth = getAuth(app);
                 
-                // কাস্টম টোকেন বা অ্যানোনিমাস সাইন-ইন
-                if (initialAuthToken) {
-                    await signInWithCustomToken(auth, initialAuthToken);
-                } else {
-                    await signInAnonymously(auth);
-                }
-
+                
+                //new code by raj
+                await signInAnonymously(auth);
                 // Auth State Observer
                 onAuthStateChanged(auth, (user) => {
                     loadingSpinner.classList.add('hidden');
