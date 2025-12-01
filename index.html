@@ -1,0 +1,1141 @@
+<!DOCTYPE html>
+<html lang="bn">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>পড়ার অগ্রগতি ট্র্যাকার</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Lucide Icons -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <style>
+        /* ইন্টার (Inter) ফন্ট ব্যবহার করা হয়েছে */
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@100..900&display=swap');
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f7f9fb; /* হালকা ব্যাকগ্রাউন্ড */
+        }
+        .card {
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -2px rgba(0, 0, 0, 0.05);
+        }
+        .scroll-y {
+            overflow-y: auto;
+        }
+        /* কাস্টম স্ক্রোলবার স্টাইল */
+        .scroll-y::-webkit-scrollbar {
+            width: 6px;
+        }
+        .scroll-y::-webkit-scrollbar-thumb {
+            background-color: #a0aec0; /* গ্রে কালার */
+            border-radius: 3px;
+        }
+        .scroll-y::-webkit-scrollbar-track {
+            background-color: #edf2f7; /* হালকা ট্র্যাক */
+        }
+    </style>
+</head>
+<body class="min-h-screen">
+
+    <!-- প্রধান কন্টেইনার -->
+    <div id="app-container" class="max-w-7xl mx-auto p-4 sm:p-6 lg:p-8">
+
+        <!-- লোডিং স্পিনার (শুরুতে দেখা যাবে) -->
+        <div id="loading-spinner" class="flex justify-center items-center min-h-screen">
+            <svg class="animate-spin -ml-1 mr-3 h-8 w-8 text-indigo-600" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+            </svg>
+            <span class="text-lg text-gray-700">অ্যাপ্লিকেশন লোড হচ্ছে...</span>
+        </div>
+
+        <!-- প্রধান UI (শুরুতে লুকানো থাকবে) -->
+        <div id="main-ui" class="hidden">
+            
+            <!-- নেভিগেশন এবং হেডার -->
+            <header class="flex justify-between items-center py-4 border-b border-gray-200 mb-6">
+                <h1 class="text-3xl font-extrabold text-gray-900 flex items-center">
+                    <i data-lucide="book-open-text" class="w-6 h-6 mr-3 text-indigo-600"></i>
+                    পড়ার ট্র্যাকার
+                </h1>
+                <div class="flex items-center space-x-4">
+                    <p id="user-id-display" class="text-sm font-medium text-gray-500 bg-gray-100 px-3 py-1 rounded-full hidden sm:block">ইউজার আইডি: </p>
+                    <button id="logout-button" class="flex items-center text-sm font-medium text-red-600 hover:text-red-700 transition duration-150 p-2 rounded-lg hover:bg-red-50">
+                        <i data-lucide="log-out" class="w-5 h-5 mr-1"></i>
+                        লগআউট
+                    </button>
+                </div>
+            </header>
+
+            <!-- ট্যাব নেভিগেশন (ড্যাশবোর্ড, বিষয়, অ্যাডমিন) -->
+            <nav class="mb-6 flex space-x-4 border-b border-gray-200">
+                <button data-view="dashboard" class="tab-button py-2 px-4 text-sm font-medium border-b-2 border-indigo-500 text-indigo-600 transition duration-150">ড্যাশবোর্ড</button>
+                <button data-view="subjects" class="tab-button py-2 px-4 text-sm font-medium text-gray-500 hover:text-gray-700 hover:border-gray-300 transition duration-150">বিষয় ও অধ্যায়</button>
+                <button id="admin-tab-button" data-view="admin-panel" class="tab-button py-2 px-4 text-sm font-medium text-gray-500 hover:text-gray-700 hover:border-gray-300 transition duration-150 hidden">অ্যাডমিন প্যানেল</button>
+            </nav>
+
+            <!-- ভিউ কন্টেইনার -->
+            <div id="view-container">
+                <!-- ড্যাশবোর্ড ভিউ -->
+                <div id="dashboard-view" class="view-content grid grid-cols-1 lg:grid-cols-3 gap-6">
+                    
+                    <!-- কলাম ১: টাইমার এবং টার্গেট -->
+                    <div class="lg:col-span-1 space-y-6">
+                        <!-- কাস্টম রিডিং টাইমার (৩. কাস্টম টাইমার) -->
+                        <div id="timer-card" class="card bg-white p-6 rounded-xl">
+                            <h2 class="text-xl font-semibold mb-4 text-gray-800 flex items-center">
+                                <i data-lucide="timer" class="w-5 h-5 mr-2 text-indigo-500"></i>
+                                রিডিং টাইমার
+                            </h2>
+                            <p id="timer-display" class="text-5xl font-bold text-center mb-6 text-indigo-700 tabular-nums">00:00:00</p>
+                            
+                            <select id="timer-subject-select" class="w-full p-3 mb-4 border border-gray-300 rounded-lg focus:ring-indigo-500 focus:border-indigo-500 bg-white text-gray-700">
+                                <option value="" disabled selected>বিষয়/অধ্যায় নির্বাচন করুন</option>
+                            </select>
+
+                            <div class="flex space-x-4">
+                                <button id="timer-start-button" class="flex-1 bg-indigo-600 text-white font-semibold py-3 rounded-xl hover:bg-indigo-700 transition duration-150">
+                                    <i data-lucide="play" class="w-5 h-5 inline-block mr-1"></i>
+                                    শুরু করুন
+                                </button>
+                                <button id="timer-stop-button" class="flex-1 bg-red-500 text-white font-semibold py-3 rounded-xl hover:bg-red-600 transition duration-150" disabled>
+                                    <i data-lucide="square" class="w-5 h-5 inline-block mr-1"></i>
+                                    বন্ধ করুন
+                                </button>
+                            </div>
+                        </div>
+
+                        <!-- টু-ডু স্টাইল রুটিন (৭. রুটিন) -->
+                        <div id="routine-card" class="card bg-white p-6 rounded-xl">
+                            <h2 class="text-xl font-semibold mb-4 text-gray-800 flex items-center">
+                                <i data-lucide="list-checks" class="w-5 h-5 mr-2 text-green-500"></i>
+                                আজকের পড়ার রুটিন
+                            </h2>
+                            <div id="routine-list" class="space-y-3">
+                                <p class="text-sm text-gray-500">আজকের কোনো রুটিন সেট করা নেই।</p>
+                            </div>
+                            <!-- রুটিন তৈরির ফর্ম -->
+                            <form id="routine-form" class="mt-4 border-t pt-4">
+                                <h3 class="font-medium mb-2">নতুন রুটিন যোগ করুন:</h3>
+                                <select id="routine-subject-select" class="w-full p-2 mb-2 border border-gray-300 rounded-lg text-sm">
+                                    <option value="" disabled selected>বিষয় নির্বাচন করুন</option>
+                                </select>
+                                <input type="number" id="routine-duration-input" placeholder="লক্ষ্য মিনিট (যেমন: ৩০)" class="w-full p-2 mb-2 border border-gray-300 rounded-lg text-sm" min="1">
+                                <button type="submit" class="w-full bg-green-500 text-white text-sm font-semibold py-2 rounded-lg hover:bg-green-600 transition duration-150">রুটিন সেট করুন</button>
+                            </form>
+                        </div>
+
+                    </div>
+
+                    <!-- কলাম ২: পরিসংখ্যান এবং লক্ষ্য (৪. ড্যাশবোর্ড) -->
+                    <div class="lg:col-span-2 space-y-6">
+                        <!-- পরিসংখ্যান কার্ড -->
+                        <div class="card bg-white p-6 rounded-xl">
+                            <h2 class="text-xl font-semibold mb-4 text-gray-800 flex items-center">
+                                <i data-lucide="bar-chart-3" class="w-5 h-5 mr-2 text-purple-500"></i>
+                                আপনার পরিসংখ্যান
+                            </h2>
+                            <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-6">
+                                <div class="bg-indigo-50 p-4 rounded-lg">
+                                    <p class="text-sm font-medium text-gray-500">মোট পড়ার সময়</p>
+                                    <p id="total-reading-time" class="text-2xl font-bold text-indigo-800">0 ঘণ্টা</p>
+                                </div>
+                                <div class="bg-green-50 p-4 rounded-lg">
+                                    <p class="text-sm font-medium text-gray-500">আজকের পড়া</p>
+                                    <p id="daily-reading-time" class="text-2xl font-bold text-green-800">0 মিনিট</p>
+                                </div>
+                                <div class="bg-yellow-50 p-4 rounded-lg">
+                                    <p class="text-sm font-medium text-gray-500">সাপ্তাহিক পড়া</p>
+                                    <p id="weekly-reading-time" class="text-2xl font-bold text-yellow-800">0 ঘণ্টা</p>
+                                </div>
+                            </div>
+
+                            <!-- চার্ট কন্টেইনার (৪. চার্ট) -->
+                            <h3 class="text-lg font-medium text-gray-700 mb-3">সাপ্তাহিক কার্যকলাপ (মিনিটে)</h3>
+                            <canvas id="weeklyActivityChart" height="150"></canvas>
+                            
+                            <!-- লক্ষ্য সেট করার ফর্ম (৫. দৈনিক/সাপ্তাহিক লক্ষ্য) -->
+                            <form id="goal-form" class="mt-6 pt-4 border-t">
+                                <h3 class="font-medium mb-2">দৈনিক ও সাপ্তাহিক লক্ষ্য সেট করুন</h3>
+                                <div class="flex space-x-3">
+                                    <input type="number" id="daily-goal-input" placeholder="দৈনিক লক্ষ্য (মিনিট)" class="flex-1 p-2 border border-gray-300 rounded-lg text-sm" min="1">
+                                    <input type="number" id="weekly-goal-input" placeholder="সাপ্তাহিক লক্ষ্য (ঘন্টা)" class="flex-1 p-2 border border-gray-300 rounded-lg text-sm" min="1">
+                                    <button type="submit" class="bg-indigo-500 text-white text-sm font-semibold px-4 py-2 rounded-lg hover:bg-indigo-600 transition duration-150">সেভ করুন</button>
+                                </div>
+                            </form>
+                        </div>
+                        
+                        <!-- কাস্টম রিডিং প্ল্যান (৬. রিডিং প্ল্যান) -->
+                        <div class="card bg-white p-6 rounded-xl">
+                            <h2 class="text-xl font-semibold mb-4 text-gray-800 flex items-center">
+                                <i data-lucide="calendar-check" class="w-5 h-5 mr-2 text-teal-500"></i>
+                                কাস্টম পড়ার পরিকল্পনা
+                            </h2>
+                            <form id="plan-form" class="space-y-3">
+                                <select id="plan-subject-select" class="w-full p-3 border border-gray-300 rounded-lg text-gray-700">
+                                    <option value="" disabled selected>পরিকল্পনার জন্য বিষয় নির্বাচন করুন</option>
+                                </select>
+                                <input type="number" id="plan-days-input" placeholder="কত দিনে বইটি শেষ করতে চান? (দিন)" class="w-full p-3 border border-gray-300 rounded-lg" min="1" required>
+                                <button type="submit" class="w-full bg-teal-500 text-white font-semibold py-3 rounded-lg hover:bg-teal-600 transition duration-150">পরিকল্পনা তৈরি করুন</button>
+                            </form>
+                            <div id="plan-output" class="mt-4 pt-4 border-t hidden">
+                                <p class="text-base font-medium text-gray-700 mb-2">আপনার পড়ার পরিকল্পনা:</p>
+                                <p id="plan-details" class="text-lg font-bold text-teal-700"></p>
+                                <p id="plan-daily-chapters" class="text-sm text-gray-600"></p>
+                            </div>
+                        </div>
+
+                    </div>
+                </div>
+
+                <!-- বিষয় ও অধ্যায় ভিউ (১. সাবজেক্ট/চ্যাপ্টার ম্যানেজমেন্ট) -->
+                <div id="subjects-view" class="view-content hidden space-y-6">
+                    <div class="card bg-white p-6 rounded-xl">
+                        <h2 class="text-2xl font-semibold mb-4 text-gray-800 flex items-center">
+                            <i data-lucide="book-open" class="w-6 h-6 mr-2 text-indigo-500"></i>
+                            বিষয় যোগ করুন
+                        </h2>
+                        <form id="subject-form" class="flex space-x-3">
+                            <input type="text" id="subject-name-input" placeholder="নতুন বিষয়ের নাম (যেমন: বাংলা)" class="flex-1 p-3 border border-gray-300 rounded-lg" required>
+                            <button type="submit" class="bg-indigo-600 text-white font-semibold px-6 py-3 rounded-lg hover:bg-indigo-700 transition duration-150">যোগ করুন</button>
+                        </form>
+                    </div>
+
+                    <div class="card bg-white p-6 rounded-xl">
+                        <h2 class="text-2xl font-semibold mb-4 text-gray-800 flex items-center">
+                            <i data-lucide="library" class="w-6 h-6 mr-2 text-indigo-500"></i>
+                            আপনার বিষয় তালিকা
+                        </h2>
+                        <div id="subjects-list" class="space-y-4">
+                            <!-- বিষয়গুলো এখানে লোড হবে -->
+                            <p class="text-gray-500">কোনো বিষয় লোড হয়নি।</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- অ্যাডমিন প্যানেল ভিউ (২. ও ৮. অ্যাডমিন প্যানেল) -->
+                <div id="admin-panel-view" class="view-content hidden space-y-6">
+                    <h2 class="text-3xl font-bold text-gray-900 flex items-center">
+                        <i data-lucide="shield" class="w-7 h-7 mr-2 text-red-500"></i>
+                        অ্যাডমিন প্যানেল
+                    </h2>
+                    <div class="card bg-white p-6 rounded-xl">
+                        <h3 class="text-xl font-semibold mb-4 text-gray-800">সকল ব্যবহারকারীর পড়ার পরিসংখ্যান</h3>
+                        <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+                            <div class="bg-red-50 p-4 rounded-lg">
+                                <p class="text-sm font-medium text-gray-500">মোট ব্যবহারকারী</p>
+                                <p id="admin-user-count" class="text-2xl font-bold text-red-800">...</p>
+                            </div>
+                            <div class="bg-blue-50 p-4 rounded-lg">
+                                <p class="text-sm font-medium text-gray-500">মোট পড়ার সময় (ঘণ্টা)</p>
+                                <p id="admin-total-hours" class="text-2xl font-bold text-blue-800">...</p>
+                            </div>
+                            <div class="bg-purple-50 p-4 rounded-lg">
+                                <p class="text-sm font-medium text-gray-500">সাপ্তাহিক গড়</p>
+                                <p id="admin-weekly-avg" class="text-2xl font-bold text-purple-800">...</p>
+                            </div>
+                        </div>
+
+                        <h3 class="text-lg font-medium text-gray-700 mb-3">ব্যবহারকারী কার্যকলাপ রিপোর্ট</h3>
+                        <div class="scroll-y h-96 border rounded-lg p-4">
+                            <table class="min-w-full divide-y divide-gray-200">
+                                <thead class="bg-gray-50 sticky top-0">
+                                    <tr>
+                                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">ইউজার আইডি</th>
+                                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">মোট সময় (ঘণ্টা)</th>
+                                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">সর্বশেষ কার্যকলাপ</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="admin-user-report-table" class="bg-white divide-y divide-gray-200">
+                                    <!-- অ্যাডমিন রিপোর্ট এখানে লোড হবে -->
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+
+        </div>
+
+        <!-- অথেন্টিকেশন ভিউ (২. ইউজার অথেন্টিকেশন) -->
+        <div id="auth-view" class="hidden min-h-screen flex justify-center items-center">
+            <div class="card bg-white p-8 rounded-xl w-full max-w-md">
+                <h2 class="text-2xl font-bold text-center mb-6 text-gray-900">লগইন / সাইন আপ</h2>
+                <form id="auth-form" class="space-y-4">
+                    <div>
+                        <label for="email" class="block text-sm font-medium text-gray-700">ইমেইল</label>
+                        <input type="email" id="email" required class="mt-1 block w-full p-3 border border-gray-300 rounded-lg focus:ring-indigo-500 focus:border-indigo-500">
+                    </div>
+                    <div>
+                        <label for="password" class="block text-sm font-medium text-gray-700">পাসওয়ার্ড</label>
+                        <input type="password" id="password" required class="mt-1 block w-full p-3 border border-gray-300 rounded-lg focus:ring-indigo-500 focus:border-indigo-500">
+                    </div>
+                    <p id="auth-error" class="text-sm text-red-500 text-center"></p>
+                    <button type="submit" id="auth-submit-button" class="w-full bg-indigo-600 text-white font-semibold py-3 rounded-lg hover:bg-indigo-700 transition duration-150">
+                        লগইন / সাইন আপ
+                    </button>
+                </form>
+                <div class="mt-4 text-center">
+                    <button id="toggle-auth-mode" class="text-sm text-indigo-600 hover:text-indigo-800">
+                        অন্য মোডে যান
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- কাস্টম মডেল কন্টেইনার (Alert/Confirmation এর জন্য) -->
+        <div id="custom-modal" class="hidden fixed inset-0 bg-gray-900 bg-opacity-75 z-50 flex justify-center items-center">
+            <div class="bg-white p-6 rounded-xl w-full max-w-sm card">
+                <h3 id="modal-title" class="text-lg font-bold mb-3"></h3>
+                <p id="modal-message" class="text-gray-700 mb-6"></p>
+                <div id="modal-actions" class="flex justify-end space-x-3">
+                    <button id="modal-cancel-button" class="px-4 py-2 bg-gray-200 text-gray-800 rounded-lg hover:bg-gray-300 transition duration-150 hidden">বাতিল</button>
+                    <button id="modal-confirm-button" class="px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition duration-150">ঠিক আছে</button>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+    <!-- Firebase SDKs -->
+    <script type="module">
+        // Firebase মডিউলগুলো ইম্পোর্ট করুন
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.6.0/firebase-app.js";
+        import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut, onAuthStateChanged, signInWithCustomToken, signInAnonymously } from "https://www.gstatic.com/firebasejs/10.6.0/firebase-auth.js";
+        import { getFirestore, doc, collection, query, where, getDocs, setDoc, addDoc, onSnapshot, serverTimestamp, updateDoc, deleteDoc, runTransaction } from "https://www.gstatic.com/firebasejs/10.6.0/firebase-firestore.js";
+        
+        // Chart.js SDK (পরিসংখ্যান দেখানোর জন্য)
+        import "https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js";
+
+        // IMPORTANT: এই অংশটি Canvas পরিবেশ থেকে স্বয়ংক্রিয়ভাবে প্রদান করা হয়।
+        const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-app-id';
+        const firebaseConfig = typeof __firebase_config !== 'undefined' ? JSON.parse(__firebase_config) : { /* এখানে আপনার নিজস্ব Firebase কনফিগারেশন যোগ করুন */ };
+        const initialAuthToken = typeof __initial_auth_token !== 'undefined' ? __initial_auth_token : null;
+        
+        // --- হার্ডকোডেড অ্যাডমিন ইউজার আইডি ---
+        // আপনার বা অ্যাডমিনের ইউজার আইডি এখানে সেট করুন।
+        const ADMIN_UID = 'admin-user-id'; 
+
+        // Firebase ইনিশিয়ালাইজেশন
+        let app;
+        let db;
+        let auth;
+        let userId = null;
+        let isAuthReady = false;
+        let currentAuthMode = 'login'; // 'login' বা 'signup'
+        let timerInterval = null;
+        let startTime = 0;
+        let currentReadingRef = null;
+
+        // UI উপাদান
+        const loadingSpinner = document.getElementById('loading-spinner');
+        const mainUi = document.getElementById('main-ui');
+        const authView = document.getElementById('auth-view');
+        const authForm = document.getElementById('auth-form');
+        const emailInput = document.getElementById('email');
+        const passwordInput = document.getElementById('password');
+        const authSubmitButton = document.getElementById('auth-submit-button');
+        const authError = document.getElementById('auth-error');
+        const toggleAuthModeButton = document.getElementById('toggle-auth-mode');
+        const userIdDisplay = document.getElementById('user-id-display');
+        const logoutButton = document.getElementById('logout-button');
+        const adminTabButton = document.getElementById('admin-tab-button');
+
+        // ড্যাশবোর্ড উপাদান
+        const timerDisplay = document.getElementById('timer-display');
+        const timerStartButton = document.getElementById('timer-start-button');
+        const timerStopButton = document.getElementById('timer-stop-button');
+        const timerSubjectSelect = document.getElementById('timer-subject-select');
+        const subjectsView = document.getElementById('subjects-view');
+        const subjectsList = document.getElementById('subjects-list');
+        const subjectForm = document.getElementById('subject-form');
+        const subjectNameInput = document.getElementById('subject-name-input');
+        const routineList = document.getElementById('routine-list');
+        const routineForm = document.getElementById('routine-form');
+        const routineSubjectSelect = document.getElementById('routine-subject-select');
+        const routineDurationInput = document.getElementById('routine-duration-input');
+        const totalReadingTime = document.getElementById('total-reading-time');
+        const dailyReadingTime = document.getElementById('daily-reading-time');
+        const weeklyReadingTime = document.getElementById('weekly-reading-time');
+        const goalForm = document.getElementById('goal-form');
+        const dailyGoalInput = document.getElementById('daily-goal-input');
+        const weeklyGoalInput = document.getElementById('weekly-goal-input');
+        const planForm = document.getElementById('plan-form');
+        const planSubjectSelect = document.getElementById('plan-subject-select');
+        const planDaysInput = document.getElementById('plan-days-input');
+        const planOutput = document.getElementById('plan-output');
+        const planDetails = document.getElementById('plan-details');
+        const planDailyChapters = document.getElementById('plan-daily-chapters');
+        const adminUserCount = document.getElementById('admin-user-count');
+        const adminTotalHours = document.getElementById('admin-total-hours');
+        const adminWeeklyAvg = document.getElementById('admin-weekly-avg');
+        const adminUserReportTable = document.getElementById('admin-user-report-table');
+
+        // কাস্টম মডেল
+        const customModal = document.getElementById('custom-modal');
+        const modalTitle = document.getElementById('modal-title');
+        const modalMessage = document.getElementById('modal-message');
+        const modalConfirmButton = document.getElementById('modal-confirm-button');
+        const modalCancelButton = document.getElementById('modal-cancel-button');
+
+        let weeklyChart = null; // Chart.js ইনস্ট্যান্স
+        
+        // সমস্ত বিষয়বস্তু সংরক্ষণ করার জন্য গ্লোবাল ভেরিয়েবল
+        let allSubjects = [];
+        let allReadingSessions = [];
+
+        // --- সাহায্যকারী ফাংশন: মডেল UI ---
+
+        /** একটি কাস্টম মডেল/ডায়ালগ দেখায় */
+        function showModal(title, message, isConfirm, onConfirm) {
+            modalTitle.textContent = title;
+            modalMessage.textContent = message;
+            
+            modalConfirmButton.textContent = isConfirm ? 'নিশ্চিত করুন' : 'ঠিক আছে';
+            modalCancelButton.classList.toggle('hidden', !isConfirm);
+
+            customModal.classList.remove('hidden');
+
+            // নিশ্চিত বা OK বাটনে ক্লিক হ্যান্ডলার
+            modalConfirmButton.onclick = () => {
+                customModal.classList.add('hidden');
+                if (onConfirm) onConfirm();
+            };
+
+            // বাতিল বাটনে ক্লিক হ্যান্ডলার
+            modalCancelButton.onclick = () => {
+                customModal.classList.add('hidden');
+            };
+        }
+
+        /** মিনিটকে HH:MM:SS ফরম্যাটে রূপান্তর করে */
+        function formatSeconds(seconds) {
+            const h = String(Math.floor(seconds / 3600)).padStart(2, '0');
+            const m = String(Math.floor((seconds % 3600) / 60)).padStart(2, '0');
+            const s = String(seconds % 60).padStart(2, '0');
+            return `${h}:${m}:${s}`;
+        }
+        
+        /** HH:MM:SS ফরম্যাটকে ঘণ্টায় রূপান্তর করে */
+        function secondsToHours(seconds) {
+            return (seconds / 3600).toFixed(2);
+        }
+
+        // --- Firebase ইনিশিয়ালাইজেশন ও অথেন্টিকেশন ---
+
+        async function initFirebase() {
+            try {
+                app = initializeApp(firebaseConfig);
+                db = getFirestore(app);
+                auth = getAuth(app);
+                
+                // কাস্টম টোকেন বা অ্যানোনিমাস সাইন-ইন
+                if (initialAuthToken) {
+                    await signInWithCustomToken(auth, initialAuthToken);
+                } else {
+                    await signInAnonymously(auth);
+                }
+
+                // Auth State Observer
+                onAuthStateChanged(auth, (user) => {
+                    loadingSpinner.classList.add('hidden');
+                    isAuthReady = true;
+
+                    if (user) {
+                        userId = user.uid;
+                        userIdDisplay.textContent = `ইউজার আইডি: ${userId}`;
+                        userIdDisplay.classList.remove('hidden');
+                        authView.classList.add('hidden');
+                        mainUi.classList.remove('hidden');
+                        
+                        // অ্যাডমিন প্যানেল দেখানো
+                        if (userId === ADMIN_UID) {
+                            adminTabButton.classList.remove('hidden');
+                            loadAdminData();
+                        } else {
+                            adminTabButton.classList.add('hidden');
+                        }
+                        
+                        // ইউজার ডেটা লোড করা
+                        loadUserData();
+
+                    } else {
+                        userId = null;
+                        mainUi.classList.add('hidden');
+                        authView.classList.remove('hidden');
+                        document.querySelectorAll('.view-content').forEach(el => el.classList.add('hidden'));
+                    }
+                });
+            } catch (error) {
+                console.error("Firebase ইনিশিয়ালাইজেশনে ত্রুটি:", error);
+                loadingSpinner.innerHTML = `<p class="text-red-600">ত্রুটি: Firebase লোড করা যায়নি। কনসোল দেখুন।</p>`;
+            }
+        }
+        
+        // লগইন/সাইনআপ টগল
+        toggleAuthModeButton.addEventListener('click', () => {
+            currentAuthMode = currentAuthMode === 'login' ? 'signup' : 'login';
+            authSubmitButton.textContent = currentAuthMode === 'login' ? 'লগইন' : 'সাইন আপ';
+            toggleAuthModeButton.textContent = currentAuthMode === 'login' ? 'অ্যাকাউন্ট নেই? সাইন আপ করুন' : 'ইতিমধ্যে একটি অ্যাকাউন্ট আছে? লগইন করুন';
+            authError.textContent = '';
+        });
+
+        // অথেন্টিকেশন ফর্ম জমা দেওয়া
+        authForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            authError.textContent = '';
+            const email = emailInput.value;
+            const password = passwordInput.value;
+            
+            try {
+                if (currentAuthMode === 'signup') {
+                    await createUserWithEmailAndPassword(auth, email, password);
+                } else {
+                    await signInWithEmailAndPassword(auth, email, password);
+                }
+            } catch (error) {
+                console.error("Authentication Error:", error);
+                authError.textContent = `ত্রুটি: ${error.message.includes('auth/invalid-credential') ? 'ভুল ইমেইল বা পাসওয়ার্ড' : error.message}`;
+            }
+        });
+
+        // লগআউট
+        logoutButton.addEventListener('click', async () => {
+            try {
+                // টাইমার চললে সেভ করে বন্ধ করা
+                if (timerInterval) await stopTimer(); 
+                await signOut(auth);
+                showModal('সফল', 'আপনি সফলভাবে লগআউট করেছেন।', false);
+            } catch (error) {
+                showModal('ত্রুটি', 'লগআউট করা সম্ভব হয়নি।', false);
+            }
+        });
+
+        // --- ডেটাবেস পাথ ফাংশন ---
+        const getUserCollectionRef = (collectionName) => collection(db, `artifacts/${appId}/users/${userId}/${collectionName}`);
+        const getAdminCollectionRef = (collectionName) => collection(db, `artifacts/${appId}/public/data/${collectionName}`);
+
+        // --- রিয়েল-টাইম ডেটা লোড করা (onSnapshot) ---
+
+        function loadUserData() {
+            if (!userId) return;
+
+            // ১. বিষয় লোড করা
+            onSnapshot(getUserCollectionRef('subjects'), (snapshot) => {
+                allSubjects = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+                renderSubjectDropdowns();
+                renderSubjectsList();
+            }, (error) => console.error("Subjects Snapshot Error:", error));
+            
+            // ২. রিডিং সেশন লোড করা
+            onSnapshot(getUserCollectionRef('reading_sessions'), (snapshot) => {
+                allReadingSessions = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+                calculateAndRenderStats();
+            }, (error) => console.error("Sessions Snapshot Error:", error));
+
+            // ৩. রুটিন লোড করা
+            onSnapshot(getUserCollectionRef('routines'), (snapshot) => {
+                const routines = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+                renderRoutineList(routines);
+            }, (error) => console.error("Routines Snapshot Error:", error));
+            
+            // ৪. লক্ষ্য লোড করা
+            onSnapshot(doc(db, `artifacts/${appId}/users/${userId}/settings/goals`), (docSnapshot) => {
+                if (docSnapshot.exists()) {
+                    const goals = docSnapshot.data();
+                    dailyGoalInput.value = goals.dailyGoal || '';
+                    weeklyGoalInput.value = goals.weeklyGoal || '';
+                }
+            }, (error) => console.error("Goals Snapshot Error:", error));
+        }
+        
+        // --- বিষয় ও অধ্যায় ম্যানেজমেন্ট (১. ও ৩. এর জন্য) ---
+
+        // ড্রপডাউন রেন্ডার করা (টাইমার ও রুটিনের জন্য)
+        function renderSubjectDropdowns() {
+            timerSubjectSelect.innerHTML = '<option value="" disabled selected>বিষয়/অধ্যায় নির্বাচন করুন</option>';
+            routineSubjectSelect.innerHTML = '<option value="" disabled selected>বিষয় নির্বাচন করুন</option>';
+            planSubjectSelect.innerHTML = '<option value="" disabled selected>পরিকল্পনার জন্য বিষয় নির্বাচন করুন</option>';
+
+            allSubjects.forEach(subject => {
+                // বিষয় হিসাবে যোগ করা
+                const option = `<option value="${subject.id}">${subject.name}</option>`;
+                timerSubjectSelect.insertAdjacentHTML('beforeend', option);
+                routineSubjectSelect.insertAdjacentHTML('beforeend', option);
+                planSubjectSelect.insertAdjacentHTML('beforeend', option);
+
+                // অধ্যায় হিসাবে যোগ করা
+                if (subject.chapters && Array.isArray(subject.chapters)) {
+                    subject.chapters.forEach((chapter, index) => {
+                        timerSubjectSelect.insertAdjacentHTML('beforeend', 
+                            `<option value="${subject.id}_${index}">${subject.name} > ${chapter}</option>`
+                        );
+                    });
+                }
+            });
+        }
+        
+        // বিষয় যোগ করা
+        subjectForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const name = subjectNameInput.value.trim();
+            if (!name) return;
+
+            try {
+                await addDoc(getUserCollectionRef('subjects'), {
+                    name: name,
+                    chapters: [],
+                    createdAt: serverTimestamp()
+                });
+                subjectNameInput.value = '';
+                showModal('সফল', `${name} সফলভাবে যোগ করা হয়েছে।`, false);
+            } catch (error) {
+                console.error("Error adding subject:", error);
+                showModal('ত্রুটি', 'বিষয় যোগ করা যায়নি।', false);
+            }
+        });
+
+        // বিষয় তালিকা রেন্ডার করা
+        function renderSubjectsList() {
+            subjectsList.innerHTML = '';
+            if (allSubjects.length === 0) {
+                subjectsList.innerHTML = '<p class="text-gray-500">এখনো কোনো বিষয় যোগ করা হয়নি।</p>';
+                return;
+            }
+
+            allSubjects.forEach(subject => {
+                const chapterCount = subject.chapters ? subject.chapters.length : 0;
+                
+                const subjectHtml = `
+                    <div class="p-4 bg-gray-50 rounded-lg border border-gray-200">
+                        <div class="flex justify-between items-center">
+                            <h3 class="text-lg font-medium text-gray-800">${subject.name} <span class="text-sm text-gray-500">(${chapterCount} অধ্যায়)</span></h3>
+                            <button data-subject-id="${subject.id}" class="delete-subject-btn text-red-500 hover:text-red-700 transition duration-150">
+                                <i data-lucide="trash-2" class="w-4 h-4"></i>
+                            </button>
+                        </div>
+                        <div class="mt-3">
+                            <form class="add-chapter-form flex space-x-2" data-subject-id="${subject.id}">
+                                <input type="text" placeholder="নতুন অধ্যায়ের নাম" class="flex-1 p-2 border border-gray-300 rounded-lg text-sm">
+                                <button type="submit" class="bg-indigo-500 text-white text-sm px-3 py-2 rounded-lg hover:bg-indigo-600">অধ্যায় যোগ</button>
+                            </form>
+                            <ul class="mt-3 space-y-1 text-sm text-gray-600 list-disc list-inside">
+                                ${subject.chapters && subject.chapters.map((chap, idx) => 
+                                    `<li>${chap} 
+                                        <button data-subject-id="${subject.id}" data-chapter-index="${idx}" class="delete-chapter-btn text-red-400 hover:text-red-600 ml-2">
+                                            <i data-lucide="x" class="w-3 h-3 inline-block"></i>
+                                        </button>
+                                    </li>`
+                                ).join('') || ''}
+                            </ul>
+                        </div>
+                    </div>
+                `;
+                subjectsList.insertAdjacentHTML('beforeend', subjectHtml);
+            });
+            // Lucide আইকন রেন্ডার করা
+            lucide.createIcons();
+        }
+
+        // অধ্যায় যোগ করা
+        subjectsList.addEventListener('submit', async (e) => {
+            if (e.target.classList.contains('add-chapter-form')) {
+                e.preventDefault();
+                const subjectId = e.target.dataset.subjectId;
+                const chapterInput = e.target.querySelector('input');
+                const chapterName = chapterInput.value.trim();
+
+                if (!chapterName) return;
+
+                const subjectDocRef = doc(getUserCollectionRef('subjects'), subjectId);
+                const currentSubject = allSubjects.find(s => s.id === subjectId);
+                
+                if (currentSubject) {
+                    const updatedChapters = [...(currentSubject.chapters || []), chapterName];
+                    try {
+                        await updateDoc(subjectDocRef, { chapters: updatedChapters });
+                        chapterInput.value = '';
+                        showModal('সফল', `অধ্যায়টি সফলভাবে যোগ করা হয়েছে।`, false);
+                    } catch (error) {
+                        console.error("Error adding chapter:", error);
+                        showModal('ত্রুটি', 'অধ্যায় যোগ করা যায়নি।', false);
+                    }
+                }
+            }
+        });
+        
+        // অধ্যায় মুছে ফেলা
+        subjectsList.addEventListener('click', async (e) => {
+            if (e.target.closest('.delete-chapter-btn')) {
+                const btn = e.target.closest('.delete-chapter-btn');
+                const subjectId = btn.dataset.subjectId;
+                const chapterIndex = parseInt(btn.dataset.chapterIndex);
+                
+                showModal('মুছে ফেলা হবে?', 'আপনি কি নিশ্চিত এই অধ্যায়টি মুছে ফেলতে চান?', true, async () => {
+                    const subjectDocRef = doc(getUserCollectionRef('subjects'), subjectId);
+                    const currentSubject = allSubjects.find(s => s.id === subjectId);
+                    
+                    if (currentSubject && currentSubject.chapters) {
+                        const updatedChapters = currentSubject.chapters.filter((_, index) => index !== chapterIndex);
+                        try {
+                            await updateDoc(subjectDocRef, { chapters: updatedChapters });
+                            showModal('সফল', 'অধ্যায় মুছে ফেলা হয়েছে।', false);
+                        } catch (error) {
+                            console.error("Error deleting chapter:", error);
+                            showModal('ত্রুটি', 'অধ্যায় মুছে ফেলা যায়নি।', false);
+                        }
+                    }
+                });
+            }
+            
+            // বিষয় মুছে ফেলা
+            if (e.target.closest('.delete-subject-btn')) {
+                const btn = e.target.closest('.delete-subject-btn');
+                const subjectId = btn.dataset.subjectId;
+                
+                showModal('মুছে ফেলা হবে?', 'এই বিষয় এবং এর সমস্ত অধ্যায় মুছে ফেলা হবে। আপনি কি নিশ্চিত?', true, async () => {
+                    try {
+                        await deleteDoc(doc(getUserCollectionRef('subjects'), subjectId));
+                        showModal('সফল', 'বিষয়টি মুছে ফেলা হয়েছে।', false);
+                    } catch (error) {
+                        console.error("Error deleting subject:", error);
+                        showModal('ত্রুটি', 'বিষয়টি মুছে ফেলা যায়নি।', false);
+                    }
+                });
+            }
+        });
+
+
+        // --- রিডিং টাইমার লজিক (৩. কাস্টম টাইমার) ---
+
+        function updateTimerDisplay() {
+            const elapsedTime = Math.floor((Date.now() - startTime) / 1000);
+            timerDisplay.textContent = formatSeconds(elapsedTime);
+        }
+
+        async function startTimer() {
+            const subjectChapter = timerSubjectSelect.value;
+            if (!subjectChapter) {
+                showModal('নির্বাচন করুন', 'টাইমার শুরু করার আগে একটি বিষয় বা অধ্যায় নির্বাচন করুন।', false);
+                return;
+            }
+            
+            // টাইমার সেভ করার জন্য একটি নতুন ডকুমেন্ট তৈরি করা
+            currentReadingRef = doc(getUserCollectionRef('reading_sessions'), crypto.randomUUID());
+            await setDoc(currentReadingRef, {
+                subjectChapter: subjectChapter,
+                startTime: serverTimestamp(),
+                durationSeconds: 0,
+                status: 'running'
+            });
+
+            startTime = Date.now();
+            timerInterval = setInterval(updateTimerDisplay, 1000);
+            
+            timerStartButton.disabled = true;
+            timerStopButton.disabled = false;
+            timerStartButton.textContent = 'চলছে...';
+            timerStartButton.classList.remove('bg-indigo-600', 'hover:bg-indigo-700');
+            timerStartButton.classList.add('bg-gray-400');
+            timerSubjectSelect.disabled = true;
+        }
+
+        async function stopTimer() {
+            if (!timerInterval) return;
+
+            clearInterval(timerInterval);
+            const durationSeconds = Math.floor((Date.now() - startTime) / 1000);
+
+            if (currentReadingRef) {
+                try {
+                    await updateDoc(currentReadingRef, {
+                        endTime: serverTimestamp(),
+                        durationSeconds: durationSeconds,
+                        status: 'completed',
+                        // ইউজার আইডি সেভ করা হয়েছে কারণ এটি একটি পাবলিক ডেটা নয়।
+                    });
+                    showModal('সফল', `আপনার ${formatSeconds(durationSeconds)} পড়ার সময় সেভ করা হয়েছে!`, false);
+                } catch (error) {
+                    console.error("Error saving reading session:", error);
+                    showModal('ত্রুটি', 'পড়ার সেশন সেভ করা যায়নি।', false);
+                }
+            }
+            
+            // রিসেট UI
+            timerInterval = null;
+            startTime = 0;
+            currentReadingRef = null;
+            timerDisplay.textContent = '00:00:00';
+            timerStartButton.disabled = false;
+            timerStopButton.disabled = true;
+            timerStartButton.textContent = 'শুরু করুন';
+            timerStartButton.classList.remove('bg-gray-400');
+            timerStartButton.classList.add('bg-indigo-600', 'hover:bg-indigo-700');
+            timerSubjectSelect.disabled = false;
+            timerSubjectSelect.value = ''; // ড্রপডাউন রিসেট
+        }
+
+        timerStartButton.addEventListener('click', startTimer);
+        timerStopButton.addEventListener('click', stopTimer);
+
+        // --- পরিসংখ্যান ও ড্যাশবোর্ড (৪. ও ৫. দৈনিক/সাপ্তাহিক স্ট্যাটস) ---
+        
+        function getStartOfWeek(date) {
+            const d = new Date(date);
+            const day = d.getDay();
+            const diff = d.getDate() - day + (day === 0 ? -6 : 1); // সোমবারকে সপ্তাহের শুরু ধরা হয়েছে (ISO)
+            d.setDate(diff);
+            d.setHours(0, 0, 0, 0);
+            return d;
+        }
+
+        function calculateAndRenderStats() {
+            if (allReadingSessions.length === 0) {
+                totalReadingTime.textContent = '0 ঘণ্টা';
+                dailyReadingTime.textContent = '0 মিনিট';
+                weeklyReadingTime.textContent = '0 ঘণ্টা';
+                updateChart([]);
+                return;
+            }
+
+            const now = new Date();
+            const today = now.toDateString();
+            const startOfWeek = getStartOfWeek(now).getTime();
+
+            let totalSeconds = 0;
+            let dailySeconds = 0;
+            let weeklySeconds = 0;
+            
+            // 7 দিনের জন্য অ্যারে তৈরি করা (সোমবার থেকে রবিবার)
+            const weeklyData = Array(7).fill(0); 
+
+            allReadingSessions.forEach(session => {
+                const duration = session.durationSeconds || 0;
+                totalSeconds += duration;
+                
+                if (session.startTime && session.startTime.toDate) {
+                    const sessionDate = session.startTime.toDate();
+                    const sessionDay = sessionDate.toDateString();
+                    
+                    // দৈনিক
+                    if (sessionDay === today) {
+                        dailySeconds += duration;
+                    }
+
+                    // সাপ্তাহিক (সোমবার থেকে)
+                    if (sessionDate.getTime() >= startOfWeek) {
+                        weeklySeconds += duration;
+                        
+                        // চার্ট ডেটা
+                        let dayIndex = sessionDate.getDay();
+                        // 0 (রবিবার) -> 6, 1 (সোমবার) -> 0, ..., 6 (শনিবার) -> 5 
+                        dayIndex = (dayIndex === 0) ? 6 : dayIndex - 1;
+                        if (dayIndex >= 0 && dayIndex < 7) {
+                            weeklyData[dayIndex] += duration; // সেকেন্ড
+                        }
+                    }
+                }
+            });
+
+            // মিনিট ও ঘণ্টায় রূপান্তর
+            totalReadingTime.textContent = `${secondsToHours(totalSeconds)} ঘণ্টা`;
+            dailyReadingTime.textContent = `${Math.floor(dailySeconds / 60)} মিনিট`;
+            weeklyReadingTime.textContent = `${secondsToHours(weeklySeconds)} ঘণ্টা`;
+            
+            // চার্ট রেন্ডার
+            updateChart(weeklyData.map(s => Math.floor(s / 60))); // মিনিটে চার্ট দেখানো
+        }
+
+        // Chart.js রেন্ডার
+        function updateChart(data) {
+            const ctx = document.getElementById('weeklyActivityChart').getContext('2d');
+            const labels = ['সোম', 'মঙ্গল', 'বুধ', 'বৃহঃ', 'শুক্র', 'শনি', 'রবি'];
+
+            if (weeklyChart) {
+                weeklyChart.data.datasets[0].data = data;
+                weeklyChart.update();
+                return;
+            }
+
+            weeklyChart = new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: labels,
+                    datasets: [{
+                        label: 'পড়ার সময় (মিনিট)',
+                        data: data,
+                        backgroundColor: 'rgba(99, 102, 241, 0.8)',
+                        borderColor: 'rgb(99, 102, 241)',
+                        borderWidth: 1,
+                        borderRadius: 6
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    plugins: {
+                        legend: { display: false },
+                        title: { display: false }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            title: { display: true, text: 'মিনিট' }
+                        }
+                    }
+                }
+            });
+        }
+        
+        // লক্ষ্য সেভ করা
+        goalForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const dailyGoal = parseInt(dailyGoalInput.value) || 0;
+            const weeklyGoal = parseFloat(weeklyGoalInput.value) || 0;
+
+            if (dailyGoal <= 0 || weeklyGoal <= 0) {
+                 showModal('ত্রুটি', 'লক্ষ্য অবশ্যই শূন্যের বেশি হতে হবে।', false);
+                 return;
+            }
+
+            try {
+                await setDoc(doc(db, `artifacts/${appId}/users/${userId}/settings/goals`), {
+                    dailyGoal: dailyGoal, // মিনিটে
+                    weeklyGoal: weeklyGoal, // ঘণ্টায়
+                }, { merge: true });
+                showModal('সফল', 'আপনার দৈনিক ও সাপ্তাহিক লক্ষ্য সফলভাবে সেট করা হয়েছে।', false);
+            } catch (error) {
+                console.error("Error setting goals:", error);
+                showModal('ত্রুটি', 'লক্ষ্য সেভ করা যায়নি।', false);
+            }
+        });
+
+        // --- টু-ডু স্টাইল রুটিন (৭. রুটিন) ---
+        
+        // রুটিন যোগ করা
+        routineForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const subjectId = routineSubjectSelect.value;
+            const duration = parseInt(routineDurationInput.value);
+
+            if (!subjectId || duration <= 0) {
+                showModal('ত্রুটি', 'বিষয় নির্বাচন করুন এবং মিনিট যোগ করুন।', false);
+                return;
+            }
+            
+            const subject = allSubjects.find(s => s.id === subjectId);
+
+            try {
+                await addDoc(getUserCollectionRef('routines'), {
+                    subjectId: subjectId,
+                    subjectName: subject.name,
+                    durationMinutes: duration,
+                    isCompleted: false,
+                    date: new Date().toDateString(),
+                    createdAt: serverTimestamp()
+                });
+                routineDurationInput.value = '';
+                routineSubjectSelect.value = '';
+                showModal('সফল', 'রুটিন টাস্ক সফলভাবে যোগ করা হয়েছে।', false);
+            } catch (error) {
+                console.error("Error adding routine:", error);
+                showModal('ত্রুটি', 'রুটিন যোগ করা যায়নি।', false);
+            }
+        });
+        
+        // রুটিন রেন্ডার
+        function renderRoutineList(routines) {
+            routineList.innerHTML = '';
+            const todayRoutines = routines.filter(r => r.date === new Date().toDateString());
+
+            if (todayRoutines.length === 0) {
+                routineList.innerHTML = '<p class="text-sm text-gray-500">আজকের জন্য কোনো রুটিন সেট করা নেই।</p>';
+                return;
+            }
+
+            todayRoutines.forEach(routine => {
+                const isCompleted = routine.isCompleted;
+                const routineHtml = `
+                    <div class="flex items-center justify-between p-3 rounded-lg ${isCompleted ? 'bg-green-100' : 'bg-indigo-100'}">
+                        <div class="flex items-center">
+                            <input type="checkbox" data-routine-id="${routine.id}" ${isCompleted ? 'checked' : ''} class="routine-checkbox h-4 w-4 text-indigo-600 border-gray-300 rounded focus:ring-indigo-500">
+                            <span class="ml-3 text-sm font-medium ${isCompleted ? 'line-through text-gray-500' : 'text-gray-800'}">
+                                ${routine.subjectName} - ${routine.durationMinutes} মিনিট
+                            </span>
+                        </div>
+                        <button data-routine-id="${routine.id}" class="delete-routine-btn text-red-500 hover:text-red-700 transition duration-150">
+                            <i data-lucide="x" class="w-4 h-4"></i>
+                        </button>
+                    </div>
+                `;
+                routineList.insertAdjacentHTML('beforeend', routineHtml);
+            });
+            lucide.createIcons();
+        }
+        
+        // রুটিন চেক/আনচেক এবং মুছে ফেলা
+        routineList.addEventListener('change', async (e) => {
+            if (e.target.classList.contains('routine-checkbox')) {
+                const routineId = e.target.dataset.routineId;
+                const isCompleted = e.target.checked;
+                
+                try {
+                    await updateDoc(doc(getUserCollectionRef('routines'), routineId), {
+                        isCompleted: isCompleted,
+                        completedAt: isCompleted ? serverTimestamp() : null
+                    });
+                } catch (error) {
+                    console.error("Error updating routine:", error);
+                }
+            }
+        });
+
+        routineList.addEventListener('click', async (e) => {
+             if (e.target.closest('.delete-routine-btn')) {
+                const routineId = e.target.closest('.delete-routine-btn').dataset.routineId;
+                
+                showModal('মুছে ফেলা হবে?', 'আপনি কি নিশ্চিত এই রুটিন টাস্কটি মুছে ফেলতে চান?', true, async () => {
+                    try {
+                        await deleteDoc(doc(getUserCollectionRef('routines'), routineId));
+                        showModal('সফল', 'রুটিন টাস্ক মুছে ফেলা হয়েছে।', false);
+                    } catch (error) {
+                        console.error("Error deleting routine:", error);
+                        showModal('ত্রুটি', 'রুটিন টাস্ক মুছে ফেলা যায়নি।', false);
+                    }
+                });
+            }
+        });
+
+        // --- কাস্টম রিডিং প্ল্যান (৬. প্ল্যান) ---
+        
+        planForm.addEventListener('submit', (e) => {
+            e.preventDefault();
+            
+            const subjectId = planSubjectSelect.value;
+            const days = parseInt(planDaysInput.value);
+
+            if (!subjectId || days <= 0) {
+                showModal('ত্রুটি', 'বিষয় নির্বাচন করুন এবং দিনের সংখ্যা শূন্যের বেশি হতে হবে।', false);
+                return;
+            }
+
+            const subject = allSubjects.find(s => s.id === subjectId);
+            const totalChapters = subject.chapters ? subject.chapters.length : 0;
+            
+            if (totalChapters === 0) {
+                planOutput.classList.remove('hidden');
+                planDetails.textContent = `বিষয়: ${subject.name}`;
+                planDailyChapters.textContent = `এই বিষয়ে কোনো অধ্যায় যোগ করা নেই।`;
+                return;
+            }
+
+            // প্রতিদিন কতগুলো অধ্যায় পড়তে হবে তার হিসাব
+            const chaptersPerDay = Math.ceil(totalChapters / days);
+            
+            planOutput.classList.remove('hidden');
+            planDetails.textContent = `বিষয়: ${subject.name} | ${days} দিনের টার্গেট`;
+            planDailyChapters.textContent = `বইটি ${days} দিনে শেষ করার জন্য আপনাকে প্রতিদিন কমপক্ষে ${chaptersPerDay} টি করে অধ্যায় পড়তে হবে।`;
+        });
+        
+        // --- অ্যাডমিন প্যানেল লজিক (৮. অ্যাডমিন) ---
+        
+        async function loadAdminData() {
+            if (userId !== ADMIN_UID) return;
+
+            try {
+                // সকল ব্যবহারকারীর সেশন ডেটা
+                const usersSnapshot = await getDocs(collection(db, `artifacts/${appId}/users`));
+                const allUsers = usersSnapshot.docs.map(d => d.id).filter(uid => uid !== ADMIN_UID);
+                
+                adminUserCount.textContent = allUsers.length;
+                let totalReadingSeconds = 0;
+                let userReports = [];
+                
+                // প্রতিটি ইউজার আইডি নিয়ে ডেটা লোড করা
+                for (const uId of allUsers) {
+                    const sessionsQuery = query(collection(db, `artifacts/${appId}/users/${uId}/reading_sessions`));
+                    const sessionsSnapshot = await getDocs(sessionsQuery);
+                    
+                    let userTotalSeconds = 0;
+                    let lastActivity = 'কোনো ডেটা নেই';
+                    
+                    sessionsSnapshot.forEach(sessionDoc => {
+                        const data = sessionDoc.data();
+                        userTotalSeconds += (data.durationSeconds || 0);
+                        if (data.endTime && data.endTime.toDate) {
+                            lastActivity = data.endTime.toDate().toLocaleString('bn-BD');
+                        }
+                    });
+                    
+                    totalReadingSeconds += userTotalSeconds;
+                    
+                    userReports.push({
+                        id: uId,
+                        totalHours: secondsToHours(userTotalSeconds),
+                        lastActivity: lastActivity
+                    });
+                }
+                
+                adminTotalHours.textContent = secondsToHours(totalReadingSeconds);
+                // সাপ্তাহিক গড় হিসাব (খুব সরলীকৃত)
+                adminWeeklyAvg.textContent = `${secondsToHours(totalReadingSeconds / (allUsers.length || 1) / 52)} ঘণ্টা`;
+                
+                // রিপোর্ট টেবিল রেন্ডার
+                renderAdminReportTable(userReports);
+
+            } catch (error) {
+                console.error("Error loading Admin Data:", error);
+                showModal('ত্রুটি', 'অ্যাডমিন ডেটা লোড করা যায়নি।', false);
+            }
+        }
+
+        function renderAdminReportTable(reports) {
+            adminUserReportTable.innerHTML = '';
+            reports.sort((a, b) => parseFloat(b.totalHours) - parseFloat(a.totalHours)); // মোট সময় অনুযায়ী সর্ট করা
+            
+            reports.forEach(report => {
+                const row = `
+                    <tr class="hover:bg-gray-50">
+                        <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900 break-all">${report.id}</td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-700">${report.totalHours}</td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">${report.lastActivity}</td>
+                    </tr>
+                `;
+                adminUserReportTable.insertAdjacentHTML('beforeend', row);
+            });
+        }
+        
+        // --- ভিউ ম্যানেজমেন্ট ---
+
+        document.querySelectorAll('.tab-button').forEach(button => {
+            button.addEventListener('click', (e) => {
+                const targetView = e.currentTarget.dataset.view;
+                
+                // ট্যাব স্টাইল আপডেট
+                document.querySelectorAll('.tab-button').forEach(btn => {
+                    btn.classList.remove('border-indigo-500', 'text-indigo-600');
+                    btn.classList.add('text-gray-500', 'hover:text-gray-700', 'hover:border-gray-300');
+                    btn.classList.remove('border-b-2');
+                });
+                e.currentTarget.classList.add('border-b-2', 'border-indigo-500', 'text-indigo-600');
+                e.currentTarget.classList.remove('text-gray-500', 'hover:text-gray-700', 'hover:border-gray-300');
+
+                // ভিউ কন্টেন্ট আপডেট
+                document.querySelectorAll('.view-content').forEach(view => {
+                    view.classList.add('hidden');
+                });
+                document.getElementById(`${targetView}-view`).classList.remove('hidden');
+            });
+        });
+        
+        // ডিফল্ট ভিউ সেট করা
+        document.querySelector('.tab-button[data-view="dashboard"]').click(); 
+
+        // সব কিছু শুরু করা
+        initFirebase();
+        
+        // আইকন রেন্ডার করা
+        lucide.createIcons();
+    </script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/chartjs-plugin-datalabels/2.2.0/chartjs-plugin-datalabels.min.js" xintegrity="sha512-R/cmfskY3K2S8wU7Vp8gX9gC9J0vD3f2e+V6z1qJz5Qe+QjZ3eF6u7Z1eQZzT1FfO4Qz9yZg4l8Qz5g==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+</body>
+</html>
