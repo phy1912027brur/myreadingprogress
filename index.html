@@ -4,9 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>পড়ার অগ্রগতি ট্র্যাকার</title>
-    <!-- Tailwind CSS CDN -->
     <script src="https://cdn.tailwindcss.com"></script>
-    <!-- Lucide Icons -->
     <script src="https://unpkg.com/lucide@latest"></script>
     <style>
         /* ইন্টার (Inter) ফন্ট ব্যবহার করা হয়েছে */
@@ -36,10 +34,8 @@
 </head>
 <body class="min-h-screen">
 
-    <!-- প্রধান কন্টেইনার -->
     <div id="app-container" class="max-w-7xl mx-auto p-4 sm:p-6 lg:p-8">
 
-        <!-- লোডিং স্পিনার (শুরুতে দেখা যাবে) -->
         <div id="loading-spinner" class="flex justify-center items-center min-h-screen">
             <svg class="animate-spin -ml-1 mr-3 h-8 w-8 text-indigo-600" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
                 <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
@@ -48,10 +44,8 @@
             <span class="text-lg text-gray-700">অ্যাপ্লিকেশন লোড হচ্ছে...</span>
         </div>
 
-        <!-- প্রধান UI (শুরুতে লুকানো থাকবে) -->
         <div id="main-ui" class="hidden">
             
-            <!-- নেভিগেশন এবং হেডার -->
             <header class="flex justify-between items-center py-4 border-b border-gray-200 mb-6">
                 <h1 class="text-3xl font-extrabold text-gray-900 flex items-center">
                     <i data-lucide="book-open-text" class="w-6 h-6 mr-3 text-indigo-600"></i>
@@ -66,21 +60,16 @@
                 </div>
             </header>
 
-            <!-- ট্যাব নেভিগেশন (ড্যাশবোর্ড, বিষয়, অ্যাডমিন) -->
             <nav class="mb-6 flex space-x-4 border-b border-gray-200">
                 <button data-view="dashboard" class="tab-button py-2 px-4 text-sm font-medium border-b-2 border-indigo-500 text-indigo-600 transition duration-150">ড্যাশবোর্ড</button>
                 <button data-view="subjects" class="tab-button py-2 px-4 text-sm font-medium text-gray-500 hover:text-gray-700 hover:border-gray-300 transition duration-150">বিষয় ও অধ্যায়</button>
                 <button id="admin-tab-button" data-view="admin-panel" class="tab-button py-2 px-4 text-sm font-medium text-gray-500 hover:text-gray-700 hover:border-gray-300 transition duration-150 hidden">অ্যাডমিন প্যানেল</button>
             </nav>
 
-            <!-- ভিউ কন্টেইনার -->
             <div id="view-container">
-                <!-- ড্যাশবোর্ড ভিউ -->
                 <div id="dashboard-view" class="view-content grid grid-cols-1 lg:grid-cols-3 gap-6">
                     
-                    <!-- কলাম ১: টাইমার এবং টার্গেট -->
                     <div class="lg:col-span-1 space-y-6">
-                        <!-- কাস্টম রিডিং টাইমার (৩. কাস্টম টাইমার) -->
                         <div id="timer-card" class="card bg-white p-6 rounded-xl">
                             <h2 class="text-xl font-semibold mb-4 text-gray-800 flex items-center">
                                 <i data-lucide="timer" class="w-5 h-5 mr-2 text-indigo-500"></i>
@@ -104,7 +93,6 @@
                             </div>
                         </div>
 
-                        <!-- টু-ডু স্টাইল রুটিন (৭. রুটিন) -->
                         <div id="routine-card" class="card bg-white p-6 rounded-xl">
                             <h2 class="text-xl font-semibold mb-4 text-gray-800 flex items-center">
                                 <i data-lucide="list-checks" class="w-5 h-5 mr-2 text-green-500"></i>
@@ -113,7 +101,6 @@
                             <div id="routine-list" class="space-y-3">
                                 <p class="text-sm text-gray-500">আজকের কোনো রুটিন সেট করা নেই।</p>
                             </div>
-                            <!-- রুটিন তৈরির ফর্ম -->
                             <form id="routine-form" class="mt-4 border-t pt-4">
                                 <h3 class="font-medium mb-2">নতুন রুটিন যোগ করুন:</h3>
                                 <select id="routine-subject-select" class="w-full p-2 mb-2 border border-gray-300 rounded-lg text-sm">
@@ -126,9 +113,7 @@
 
                     </div>
 
-                    <!-- কলাম ২: পরিসংখ্যান এবং লক্ষ্য (৪. ড্যাশবোর্ড) -->
                     <div class="lg:col-span-2 space-y-6">
-                        <!-- পরিসংখ্যান কার্ড -->
                         <div class="card bg-white p-6 rounded-xl">
                             <h2 class="text-xl font-semibold mb-4 text-gray-800 flex items-center">
                                 <i data-lucide="bar-chart-3" class="w-5 h-5 mr-2 text-purple-500"></i>
@@ -149,11 +134,9 @@
                                 </div>
                             </div>
 
-                            <!-- চার্ট কন্টেইনার (৪. চার্ট) -->
                             <h3 class="text-lg font-medium text-gray-700 mb-3">সাপ্তাহিক কার্যকলাপ (মিনিটে)</h3>
                             <canvas id="weeklyActivityChart" height="150"></canvas>
                             
-                            <!-- লক্ষ্য সেট করার ফর্ম (৫. দৈনিক/সাপ্তাহিক লক্ষ্য) -->
                             <form id="goal-form" class="mt-6 pt-4 border-t">
                                 <h3 class="font-medium mb-2">দৈনিক ও সাপ্তাহিক লক্ষ্য সেট করুন</h3>
                                 <div class="flex space-x-3">
@@ -164,7 +147,6 @@
                             </form>
                         </div>
                         
-                        <!-- কাস্টম রিডিং প্ল্যান (৬. রিডিং প্ল্যান) -->
                         <div class="card bg-white p-6 rounded-xl">
                             <h2 class="text-xl font-semibold mb-4 text-gray-800 flex items-center">
                                 <i data-lucide="calendar-check" class="w-5 h-5 mr-2 text-teal-500"></i>
@@ -187,7 +169,6 @@
                     </div>
                 </div>
 
-                <!-- বিষয় ও অধ্যায় ভিউ (১. সাবজেক্ট/চ্যাপ্টার ম্যানেজমেন্ট) -->
                 <div id="subjects-view" class="view-content hidden space-y-6">
                     <div class="card bg-white p-6 rounded-xl">
                         <h2 class="text-2xl font-semibold mb-4 text-gray-800 flex items-center">
@@ -206,13 +187,11 @@
                             আপনার বিষয় তালিকা
                         </h2>
                         <div id="subjects-list" class="space-y-4">
-                            <!-- বিষয়গুলো এখানে লোড হবে -->
                             <p class="text-gray-500">কোনো বিষয় লোড হয়নি।</p>
                         </div>
                     </div>
                 </div>
 
-                <!-- অ্যাডমিন প্যানেল ভিউ (২. ও ৮. অ্যাডমিন প্যানেল) -->
                 <div id="admin-panel-view" class="view-content hidden space-y-6">
                     <h2 class="text-3xl font-bold text-gray-900 flex items-center">
                         <i data-lucide="shield" class="w-7 h-7 mr-2 text-red-500"></i>
@@ -246,8 +225,7 @@
                                     </tr>
                                 </thead>
                                 <tbody id="admin-user-report-table" class="bg-white divide-y divide-gray-200">
-                                    <!-- অ্যাডমিন রিপোর্ট এখানে লোড হবে -->
-                                </tbody>
+                                    </tbody>
                             </table>
                         </div>
                     </div>
@@ -257,7 +235,6 @@
 
         </div>
 
-        <!-- অথেন্টিকেশন ভিউ (২. ইউজার অথেন্টিকেশন) -->
         <div id="auth-view" class="hidden min-h-screen flex justify-center items-center">
             <div class="card bg-white p-8 rounded-xl w-full max-w-md">
                 <h2 class="text-2xl font-bold text-center mb-6 text-gray-900">লগইন / সাইন আপ</h2>
@@ -283,7 +260,6 @@
             </div>
         </div>
 
-        <!-- কাস্টম মডেল কন্টেইনার (Alert/Confirmation এর জন্য) -->
         <div id="custom-modal" class="hidden fixed inset-0 bg-gray-900 bg-opacity-75 z-50 flex justify-center items-center">
             <div class="bg-white p-6 rounded-xl w-full max-w-sm card">
                 <h3 id="modal-title" class="text-lg font-bold mb-3"></h3>
@@ -297,13 +273,9 @@
 
     </div>
 
-
-
-
     
-    <!-- Firebase SDKs -->
     <script type="module">
-        // For Firebase JS SDK v7.20.0 and later, measurementId is optional
+        // ✅ ফায়ারবেস কনফিগারেশন যোগ করা হয়েছে
         const firebaseConfig = {
             apiKey: "AIzaSyBcs_LrxMA_aXlZZoQ7SsLztjYU5YktEo8",
             authDomain: "readingprogressapp.firebaseapp.com",
@@ -313,8 +285,11 @@
             appId: "1:212134190518:web:995a883889f375fc9e7517",
             measurementId: "G-95XJF5XGB5"
             };
+            
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.6.0/firebase-app.js";
-        import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut, onAuthStateChanged, signInWithCustomToken, signInAnonymously } from "https://www.gstatic.com/firebasejs/10.6.0/firebase-auth.js";
+        // import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut, onAuthStateChanged, signInWithCustomToken, signInAnonymously } from "https://www.gstatic.com/firebasejs/10.6.0/firebase-auth.js";
+        // ✅ শুধুমাত্র প্রয়োজনীয় মডিউল আমদানি করা হয়েছে
+        import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.6.0/firebase-auth.js";
         import { getFirestore, doc, collection, query, where, getDocs, setDoc, addDoc, onSnapshot, serverTimestamp, updateDoc, deleteDoc, runTransaction } from "https://www.gstatic.com/firebasejs/10.6.0/firebase-firestore.js";
         
         // Chart.js SDK (পরিসংখ্যান দেখানোর জন্য)
@@ -323,7 +298,7 @@
 
         
         // --- হার্ডকোডেড অ্যাডমিন ইউজার আইডি ---
-        // আপনার বা অ্যাডমিনের ইউজার আইডি এখানে সেট করুন।
+        // ✅ আপনার বা অ্যাডমিনের ইউজার আইডি এখানে সেট করুন।
         const ADMIN_UID = 'XFLA7wfuLJgH7jgtRtigjbtDooM2'; 
 
         // Firebase ইনিশিয়ালাইজেশন
@@ -440,8 +415,7 @@
                 auth = getAuth(app);
                 
                 
-                //new code by raj
-                await signInAnonymously(auth);
+                // ✅ `signInAnonymously(auth)` সরানো হয়েছে
                 // Auth State Observer
                 onAuthStateChanged(auth, (user) => {
                     loadingSpinner.classList.add('hidden');
@@ -466,6 +440,7 @@
                         loadUserData();
 
                     } else {
+                        // লগআউট হলে বা সেশন না থাকলে
                         userId = null;
                         mainUi.classList.add('hidden');
                         authView.classList.remove('hidden');
@@ -518,8 +493,9 @@
         });
 
         // --- ডেটাবেস পাথ ফাংশন ---
-        const getUserCollectionRef = (collectionName) => collection(db, `artifacts/${appId}/users/${userId}/${collectionName}`);
-        const getAdminCollectionRef = (collectionName) => collection(db, `artifacts/${appId}/public/data/${collectionName}`);
+        // ✅ ফায়ারস্টোর পাথগুলি সহজ এবং স্ট্যান্ডার্ড করা হয়েছে (appId সরানো হয়েছে)
+        const getUserCollectionRef = (collectionName) => collection(db, `users/${userId}/${collectionName}`);
+        const getAdminCollectionRef = (collectionName) => collection(db, `public_data/${collectionName}`);
 
         // --- রিয়েল-টাইম ডেটা লোড করা (onSnapshot) ---
 
@@ -546,7 +522,7 @@
             }, (error) => console.error("Routines Snapshot Error:", error));
             
             // ৪. লক্ষ্য লোড করা
-            onSnapshot(doc(db, `artifacts/${appId}/users/${userId}/settings/goals`), (docSnapshot) => {
+            onSnapshot(doc(db, `users/${userId}/settings/goals`), (docSnapshot) => { // ✅ পাথ ঠিক করা হয়েছে
                 if (docSnapshot.exists()) {
                     const goals = docSnapshot.data();
                     dailyGoalInput.value = goals.dailyGoal || '';
@@ -904,7 +880,8 @@
             }
 
             try {
-                await setDoc(doc(db, `artifacts/${appId}/users/${userId}/settings/goals`), {
+                // ✅ পাথ ঠিক করা হয়েছে
+                await setDoc(doc(db, `users/${userId}/settings/goals`), { 
                     dailyGoal: dailyGoal, // মিনিটে
                     weeklyGoal: weeklyGoal, // ঘণ্টায়
                 }, { merge: true });
@@ -1049,7 +1026,8 @@
 
             try {
                 // সকল ব্যবহারকারীর সেশন ডেটা
-                const usersSnapshot = await getDocs(collection(db, `artifacts/${appId}/users`));
+                // ✅ ফায়ারস্টোর পাথগুলি সহজ এবং স্ট্যান্ডার্ড করা হয়েছে
+                const usersSnapshot = await getDocs(collection(db, `users`)); 
                 const allUsers = usersSnapshot.docs.map(d => d.id).filter(uid => uid !== ADMIN_UID);
                 
                 adminUserCount.textContent = allUsers.length;
@@ -1058,7 +1036,8 @@
                 
                 // প্রতিটি ইউজার আইডি নিয়ে ডেটা লোড করা
                 for (const uId of allUsers) {
-                    const sessionsQuery = query(collection(db, `artifacts/${appId}/users/${uId}/reading_sessions`));
+                    // ✅ ফায়ারস্টোর পাথগুলি সহজ এবং স্ট্যান্ডার্ড করা হয়েছে
+                    const sessionsQuery = query(collection(db, `users/${uId}/reading_sessions`)); 
                     const sessionsSnapshot = await getDocs(sessionsQuery);
                     
                     let userTotalSeconds = 0;
@@ -1142,6 +1121,6 @@
         // আইকন রেন্ডার করা
         lucide.createIcons();
     </script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/chartjs-plugin-datalabels/2.2.0/chartjs-plugin-datalabels.min.js" xintegrity="sha512-R/cmfskY3K2S8wU7Vp8gX9gC9J0vD3f2e+V6z1qJz5Qe+QjZ3eF6u7Z1eQZzT1FfO4Qz9yZg4l8Qz5g==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/chartjs-plugin-datalabels/2.2.0/chartjs-plugin-datalabels.min.js" xintegrity="sha512-R/cmfskY3K2S8wU7Vp8gX9gC9J0vD3f2e+V6z1qJz5Qe+V9zJz5g4l8Qz5g==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
 </body>
 </html>
