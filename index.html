@@ -320,10 +320,7 @@ const firebaseConfig = {
         // Chart.js SDK (পরিসংখ্যান দেখানোর জন্য)
         import "https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js";
 
-        // IMPORTANT: এই অংশটি Canvas পরিবেশ থেকে স্বয়ংক্রিয়ভাবে প্রদান করা হয়।
-        const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-app-id';
-        const firebaseConfig = typeof __firebase_config !== 'undefined' ? JSON.parse(__firebase_config) : { /* এখানে আপনার নিজস্ব Firebase কনফিগারেশন যোগ করুন */ };
-        const initialAuthToken = typeof __initial_auth_token !== 'undefined' ? __initial_auth_token : null;
+
         
         // --- হার্ডকোডেড অ্যাডমিন ইউজার আইডি ---
         // আপনার বা অ্যাডমিনের ইউজার আইডি এখানে সেট করুন।
