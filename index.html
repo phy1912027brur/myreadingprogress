@@ -491,7 +491,42 @@
                 showModal('ত্রুটি', 'লগআউট করা সম্ভব হয়নি।', false);
             }
         });
+        type User @table {
+  email: String!
+  createdAt: Timestamp!
+  displayName: String
+  photoUrl: String
+}
 
+type Book @table {
+  title: String!
+  author: String!
+  totalPages: Int!
+  coverImageUrl: String
+  description: String
+  genre: String
+}
+
+type ReadingSession @table {
+  user: User!
+  book: Book!
+  startDate: Timestamp!
+  currentPage: Int!
+  status: String!
+  endDate: Timestamp
+  currentPercentage: Float
+  notes: String
+}
+
+type ReadingGoal @table {
+  user: User!
+  goalType: String!
+  targetValue: Int!
+  period: String!
+  startDate: Timestamp!
+  endDate: Timestamp
+  description: String
+}
         // --- ডেটাবেস পাথ ফাংশন ---
         // ✅ ফায়ারস্টোর পাথগুলি সহজ এবং স্ট্যান্ডার্ড করা হয়েছে (appId সরানো হয়েছে)
         const getUserCollectionRef = (collectionName) => collection(db, `users/${userId}/${collectionName}`);
