@@ -1180,6 +1180,34 @@ type ReadingGoal @table {
   // Make it available globally
   window.db = db;
 </script>
+<script type="module">
+  import { collection, addDoc } from "https://www.gstatic.com/firebasejs/12.6.0/firebase-firestore.js";
+
+  async function addSampleBook() {
+    await addDoc(collection(window.db, "books"), {
+      title: "Atomic Habits",
+      author: "James Clear",
+      totalPages: 250,
+      genre: "Self-help"
+    });
+    alert("Book added!");
+  }
+
+  // Run once for testing
+  addSampleBook();
+</script>
+<script type="module">
+  import { collection, getDocs } from "https://www.gstatic.com/firebasejs/12.6.0/firebase-firestore.js";
+
+  async function loadBooks() {
+    const q = await getDocs(collection(window.db, "books"));
+    q.forEach(doc => {
+      console.log(doc.id, doc.data());
+    });
+  }
+
+  loadBooks();
+</script>
 
 
 </body>
