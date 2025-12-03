@@ -1157,57 +1157,142 @@ type ReadingGoal @table {
         lucide.createIcons();
     </script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/chartjs-plugin-datalabels/2.2.0/chartjs-plugin-datalabels.min.js" xintegrity="sha512-R/cmfskY3K2S8wU7Vp8gX9gC9J0vD3f2e+V6z1qJz5Qe+V9zJz5g4l8Qz5g==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
-<script type="module">
-  // Import Firebase
-  import { initializeApp } from "https://www.gstatic.com/firebasejs/12.6.0/firebase-app.js";
-  import { getFirestore, collection, addDoc, getDocs, doc, setDoc } from "https://www.gstatic.com/firebasejs/12.6.0/firebase-firestore.js";
 
-  // Your Firebase config
-  const firebaseConfig = {
-    apiKey: "AIzaSyBcs_LrxMA_aXlZZoQ7SsLztjYU5YktEo8",
-    authDomain: "readingprogressapp.firebaseapp.com",
-    projectId: "readingprogressapp",
-    storageBucket: "readingprogressapp.firebasestorage.app",
-    messagingSenderId: "212134190518",
-    appId: "1:212134190518:web:995a883889f375fc9e7517",
-    measurementId: "G-95XJF5XGB5"
-  };
+  <script type="module">
+    // -------------------
+    // 1️⃣ Import Firebase Modules
+    // -------------------
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/12.6.0/firebase-app.js";
+    import { getFirestore, collection, addDoc, getDocs, doc, setDoc } from "https://www.gstatic.com/firebasejs/12.6.0/firebase-firestore.js";
+    import { getAuth, GoogleAuthProvider, signInWithPopup, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/12.6.0/firebase-auth.js";
 
-  // Initialize Firebase
-  const app = initializeApp(firebaseConfig);
-  const db = getFirestore(app);
+    // -------------------
+    // 2️⃣ Firebase Config
+    // -------------------
+    const firebaseConfig = {
+      apiKey: "AIzaSyBcs_LrxMA_aXlZZoQ7SsLztjYU5YktEo8",
+      authDomain: "readingprogressapp.firebaseapp.com",
+      projectId: "readingprogressapp",
+      storageBucket: "readingprogressapp.firebasestorage.app",
+      messagingSenderId: "212134190518",
+      appId: "1:212134190518:web:995a883889f375fc9e7517",
+      measurementId: "G-95XJF5XGB5"
+    };
 
-  // Make it available globally
-  window.db = db;
-</script>
-<script type="module">
-  import { collection, addDoc } from "https://www.gstatic.com/firebasejs/12.6.0/firebase-firestore.js";
+    // Initialize Firebase
+    const app = initializeApp(firebaseConfig);
+    const db = getFirestore(app);
+    const auth = getAuth(app);
 
-  async function addSampleBook() {
-    await addDoc(collection(window.db, "books"), {
-      title: "Atomic Habits",
-      author: "James Clear",
-      totalPages: 250,
-      genre: "Self-help"
+    // Expose for testing
+    window.db = db;
+    window.auth = auth;
+
+    // -------------------
+    // 3️⃣ Google Auth
+    // -------------------
+    const provider = new GoogleAuthProvider();
+    provider.setCustomParameters({ prompt: 'select_account' });
+
+    async function loginWithGoogle() {
+      try {
+        const result = await signInWithPopup(auth, provider);
+        const user = result.user;
+        console.log("User info:", user);
+        alert("Hello " + user.displayName);
+
+        // Save user to Firestore
+        const { uid, email, displayName, photoURL } = user;
+        await setDoc(doc(db, "users", uid), {
+          email,
+          displayName,
+          photoUrl: photoURL,
+          createdAt: new Date()
+        });
+      } catch (error) {
+        console.error("Login failed:", error);
+      }
+    }
+
+    function logout() {
+      signOut(auth);
+      alert("Signed out");
+    }
+
+    onAuthStateChanged(auth, user => {
+      if (user) {
+        console.log("Logged in:", user.displayName);
+      } else {
+        console.log("Logged out");
+      }
     });
-    alert("Book added!");
-  }
 
-  // Run once for testing
-  addSampleBook();
-</script>
-<script type="module">
-  import { collection, getDocs } from "https://www.gstatic.com/firebasejs/12.6.0/firebase-firestore.js";
+    document.getElementById("loginBtn").addEventListener("click", loginWithGoogle);
+    document.getElementById("logoutBtn").addEventListener("click", logout);
 
-  async function loadBooks() {
-    const q = await getDocs(collection(window.db, "books"));
-    q.forEach(doc => {
-      console.log(doc.id, doc.data());
-    });
-  }
+    // -------------------
+    // 4️⃣ Firestore Book Operations
+    // -------------------
+    async function addSampleBook() {
+      try {
+        const docRef = await addDoc(collection(db, "books"), {
+          title: "Atomic Habits",
+          author: "James Clear",
+          totalPages: 250,
+          coverImageUrl: "",
+          description: "Self improvement book",
+          genre: "Self-help"
+        });
+        alert("Book added with ID: " + docRef.id);
+      } catch (error) {
+        console.error("Error adding book: ", error);
+      }
+    }
 
-  loadBooks();
-</script>
+    async function listBooks() {
+      try {
+        const querySnapshot = await getDocs(collection(db, "books"));
+        console.clear();
+        querySnapshot.forEach((doc) => {
+          console.log(doc.id, doc.data());
+        });
+        alert("Check console for book list");
+      } catch (error) {
+        console.error("Error listing books: ", error);
+      }
+    }
+
+    document.getElementById("addBookBtn").addEventListener("click", addSampleBook);
+    document.getElementById("listBooksBtn").addEventListener("click", listBooks);
+
+    // -------------------
+    // 5️⃣ Reading Sessions & Goals (basic template)
+    // -------------------
+    async function addReadingSession(userId, bookId) {
+      await addDoc(collection(db, "readingSessions"), {
+        userId,
+        bookId,
+        startDate: new Date(),
+        currentPage: 0,
+        status: "ongoing",
+        endDate: null,
+        currentPercentage: 0,
+        notes: ""
+      });
+    }
+
+    async function addReadingGoal(userId) {
+      await addDoc(collection(db, "readingGoals"), {
+        userId,
+        goalType: "dailyPages",
+        targetValue: 20,
+        period: "daily",
+        startDate: new Date(),
+        endDate: null,
+        description: "Read 20 pages daily"
+      });
+    }
+  </script>
 
 
 </body>
