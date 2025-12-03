@@ -1157,5 +1157,30 @@ type ReadingGoal @table {
         lucide.createIcons();
     </script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/chartjs-plugin-datalabels/2.2.0/chartjs-plugin-datalabels.min.js" xintegrity="sha512-R/cmfskY3K2S8wU7Vp8gX9gC9J0vD3f2e+V6z1qJz5Qe+V9zJz5g4l8Qz5g==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+<script type="module">
+  // Import Firebase
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/12.6.0/firebase-app.js";
+  import { getFirestore, collection, addDoc, getDocs, doc, setDoc } from "https://www.gstatic.com/firebasejs/12.6.0/firebase-firestore.js";
+
+  // Your Firebase config
+  const firebaseConfig = {
+    apiKey: "AIzaSyBcs_LrxMA_aXlZZoQ7SsLztjYU5YktEo8",
+    authDomain: "readingprogressapp.firebaseapp.com",
+    projectId: "readingprogressapp",
+    storageBucket: "readingprogressapp.firebasestorage.app",
+    messagingSenderId: "212134190518",
+    appId: "1:212134190518:web:995a883889f375fc9e7517",
+    measurementId: "G-95XJF5XGB5"
+  };
+
+  // Initialize Firebase
+  const app = initializeApp(firebaseConfig);
+  const db = getFirestore(app);
+
+  // Make it available globally
+  window.db = db;
+</script>
+
+
 </body>
 </html>
