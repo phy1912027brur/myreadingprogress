@@ -11,7 +11,7 @@
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@100..900&display=swap');
         body {
             font-family: 'Inter', sans-serif;
-            background-color: #f7f9fb; /* হালকা ব্যাকগ্রাউন্ড */
+            background-color: #1b7ddf; /* হালকা ব্যাকগ্রাউন্ড */
         }
         .card {
             box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -2px rgba(0, 0, 0, 0.05);
@@ -64,6 +64,11 @@
                 <button data-view="dashboard" class="tab-button py-2 px-4 text-sm font-medium border-b-2 border-indigo-500 text-indigo-600 transition duration-150">ড্যাশবোর্ড</button>
                 <button data-view="subjects" class="tab-button py-2 px-4 text-sm font-medium text-gray-500 hover:text-gray-700 hover:border-gray-300 transition duration-150">বিষয় ও অধ্যায়</button>
                 <button id="admin-tab-button" data-view="admin-panel" class="tab-button py-2 px-4 text-sm font-medium text-gray-500 hover:text-gray-700 hover:border-gray-300 transition duration-150 hidden">অ্যাডমিন প্যানেল</button>
+                <nav class="mb-6 flex space-x-4 border-b border-gray-200">
+                <button data-view="dashboard" class="tab-button py-2 px-4 text-sm font-medium border-b-2 border-indigo-500 text-indigo-600 transition duration-150">ড্যাশবোর্ড</button>
+                <button data-view="subjects" class="tab-button py-2 px-4 text-sm font-medium text-gray-500 hover:text-gray-700 hover:border-gray-300 transition duration-150">বিষয় ও অধ্যায়</button>
+                <button id="admin-tab-button" data-view="admin-panel" class="tab-button py-2 px-4 text-sm font-medium text-gray-500 hover:text-gray-700 hover:border-gray-300 transition duration-150 hidden">অ্যাডমিন</button>
+            </nav>
             </nav>
 
             <div id="view-container">
@@ -230,6 +235,228 @@
                         </div>
                     </div>
                 </div>
+
+                <!-- =========== STREAKS VIEW =========== -->
+<div id="streaks-view" class="view-content hidden space-y-6">
+    <div class="card bg-white p-6 rounded-xl">
+        <h2 class="text-2xl font-semibold mb-6 text-gray-800 flex items-center">
+            <i data-lucide="flame" class="w-6 h-6 mr-2 text-red-500"></i>
+            আপনার পড়ার স্ট্রিক
+        </h2>
+        
+        <!-- Current Streak -->
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
+            <div class="bg-gradient-to-br from-red-50 to-orange-50 p-6 rounded-lg border border-red-200">
+                <p class="text-sm font-medium text-gray-600 mb-2">বর্তমান স্ট্রিক</p>
+                <div class="flex items-center">
+                    <span id="current-streak" class="text-4xl font-bold text-red-600">0</span>
+                    <span class="text-3xl ml-2">🔥</span>
+                </div>
+                <p class="text-xs text-gray-500 mt-2">ধারাবাহিক দিন</p>
+            </div>
+            
+            <div class="bg-gradient-to-br from-yellow-50 to-amber-50 p-6 rounded-lg border border-yellow-200">
+                <p class="text-sm font-medium text-gray-600 mb-2">সর্বোচ্চ স্ট্রিক</p>
+                <div class="flex items-center">
+                    <span id="longest-streak" class="text-4xl font-bold text-yellow-600">0</span>
+                    <span class="text-3xl ml-2">⭐</span>
+                </div>
+                <p class="text-xs text-gray-500 mt-2">আগে অর্জিত</p>
+            </div>
+            
+            <div class="bg-gradient-to-br from-green-50 to-teal-50 p-6 rounded-lg border border-green-200">
+                <p class="text-sm font-medium text-gray-600 mb-2">মোট পড়ার দিন</p>
+                <div class="flex items-center">
+                    <span id="total-reading-days" class="text-4xl font-bold text-green-600">0</span>
+                    <span class="text-3xl ml-2">📚</span>
+                </div>
+                <p class="text-xs text-gray-500 mt-2">সব সময়ে</p>
+            </div>
+        </div>
+        
+        <!-- Streak Warning -->
+        <div id="streak-warning" class="hidden bg-yellow-50 border border-yellow-200 rounded-lg p-4 mb-6">
+            <p class="text-sm text-yellow-800">
+                <i data-lucide="alert-circle" class="w-4 h-4 inline-block mr-2"></i>
+                <strong>সতর্কতা:</strong> আগামীকাল স্ট্রিক ভাঙ্গবে!  আজ পড়ুন!
+            </p>
+        </div>
+        
+        <!-- Streak History -->
+        <h3 class="text-lg font-semibold text-gray-700 mb-4">স্ট্রিক ইতিহাস</h3>
+        <div class="overflow-x-auto">
+            <table class="w-full text-sm">
+                <thead>
+                    <tr class="border-b border-gray-200">
+                        <th class="text-left px-4 py-3 font-medium text-gray-600">মাস</th>
+                        <th class="text-left px-4 py-3 font-medium text-gray-600">স্ট্রিক</th>
+                        <th class="text-left px-4 py-3 font-medium text-gray-600">শুরু</th>
+                        <th class="text-left px-4 py-3 font-medium text-gray-600">শেষ</th>
+                    </tr>
+                </thead>
+                <tbody id="streak-history-table">
+                    <tr>
+                        <td colspan="4" class="text-center py-4 text-gray-500">কোনো ডেটা নেই</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<!-- =========== CALENDAR VIEW =========== -->
+<div id="calendar-view" class="view-content hidden space-y-6">
+    <div class="card bg-white p-6 rounded-xl">
+        <h2 class="text-2xl font-semibold mb-6 text-gray-800 flex items-center">
+            <i data-lucide="calendar" class="w-6 h-6 mr-2 text-blue-500"></i>
+            পড়ার ক্যালেন্ডার
+        </h2>
+        
+        <!-- Month Navigation -->
+        <div class="flex justify-between items-center mb-6">
+            <button id="prev-month-btn" class="px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700">
+                <i data-lucide="chevron-left" class="w-4 h-4 inline-block"></i> পূর্ববর্তী
+            </button>
+            <h3 id="calendar-month-year" class="text-xl font-semibold text-gray-800">ডিসেম্বর ২০২৫</h3>
+            <button id="next-month-btn" class="px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700">
+                পরবর্তী <i data-lucide="chevron-right" class="w-4 h-4 inline-block"></i>
+            </button>
+        </div>
+        
+        <!-- Calendar Grid -->
+        <div class="grid grid-cols-7 gap-2 mb-6">
+            <!-- Days of week header -->
+            <div class="text-center font-bold text-gray-600 py-2">সোম</div>
+            <div class="text-center font-bold text-gray-600 py-2">মঙ্গল</div>
+            <div class="text-center font-bold text-gray-600 py-2">বুধ</div>
+            <div class="text-center font-bold text-gray-600 py-2">বৃহঃ</div>
+            <div class="text-center font-bold text-gray-600 py-2">শুক্র</div>
+            <div class="text-center font-bold text-gray-600 py-2">শনি</div>
+            <div class="text-center font-bold text-gray-600 py-2">রবি</div>
+            
+            <!-- Calendar days -->
+            <div id="calendar-grid" class="col-span-7 grid grid-cols-7 gap-2">
+                <!-- Generated by JavaScript -->
+            </div>
+        </div>
+        
+        <!-- Calendar Legend -->
+        <div class="bg-gray-50 p-4 rounded-lg border border-gray-200">
+            <p class="text-sm font-medium text-gray-700 mb-3">রঙের অর্থ:</p>
+            <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
+                <div class="flex items-center">
+                    <div class="w-4 h-4 bg-green-500 rounded mr-2"></div>
+                    <span class="text-sm text-gray-600">পড়া হয়েছে ✓</span>
+                </div>
+                <div class="flex items-center">
+                    <div class="w-4 h-4 bg-yellow-500 rounded mr-2"></div>
+                    <span class="text-sm text-gray-600">কম পড়া</span>
+                </div>
+                <div class="flex items-center">
+                    <div class="w-4 h-4 bg-red-500 rounded mr-2"></div>
+                    <span class="text-sm text-gray-600">পড়া হয়নি ✗</span>
+                </div>
+                <div class="flex items-center">
+                    <div class="w-4 h-4 bg-gray-300 rounded mr-2"></div>
+                    <span class="text-sm text-gray-600">অন্য মাস</span>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Day Details -->
+        <div id="day-details" class="mt-6 hidden p-4 bg-blue-50 rounded-lg border border-blue-200">
+            <h4 class="font-semibold text-gray-800 mb-2">দিনের বিবরণ:</h4>
+            <p id="day-reading-time" class="text-sm text-gray-600 mb-1">পড়ার সময়: <span class="font-semibold">0 ঘণ্টা</span></p>
+            <p id="day-sessions" class="text-sm text-gray-600">সেশন সংখ্যা: <span class="font-semibold">0</span></p>
+        </div>
+    </div>
+</div>
+
+<!-- =========== HISTORY VIEW =========== -->
+<div id="history-view" class="view-content hidden space-y-6">
+    <div class="card bg-white p-6 rounded-xl">
+        <h2 class="text-2xl font-semibold mb-6 text-gray-800 flex items-center">
+            <i data-lucide="history" class="w-6 h-6 mr-2 text-purple-500"></i>
+            পড়ার ইতিহাস
+        </h2>
+        
+        <!-- Filters -->
+        <div class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
+            <div>
+                <label class="block text-sm font-medium text-gray-700 mb-2">বিষয় ফিল্টার করুন</label>
+                <select id="history-subject-filter" class="w-full p-2 border border-gray-300 rounded-lg text-sm">
+                    <option value="">সব বিষয়</option>
+                </select>
+            </div>
+            <div>
+                <label class="block text-sm font-medium text-gray-700 mb-2">শুরুর তারিখ</label>
+                <input type="date" id="history-start-date" class="w-full p-2 border border-gray-300 rounded-lg text-sm">
+            </div>
+            <div>
+                <label class="block text-sm font-medium text-gray-700 mb-2">শেষ তারিখ</label>
+                <input type="date" id="history-end-date" class="w-full p-2 border border-gray-300 rounded-lg text-sm">
+            </div>
+            <div class="flex items-end">
+                <button id="history-filter-btn" class="w-full px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 text-sm font-medium">
+                    ফিল্টার করুন
+                </button>
+            </div>
+        </div>
+        
+        <!-- Summary Stats -->
+        <div class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
+            <div class="bg-blue-50 p-4 rounded-lg border border-blue-200">
+                <p class="text-xs font-medium text-gray-600">মোট সেশন</p>
+                <p id="history-total-sessions" class="text-2xl font-bold text-blue-600">0</p>
+            </div>
+            <div class="bg-green-50 p-4 rounded-lg border border-green-200">
+                <p class="text-xs font-medium text-gray-600">মোট সময়</p>
+                <p id="history-total-time" class="text-2xl font-bold text-green-600">0 ঘ</p>
+            </div>
+            <div class="bg-purple-50 p-4 rounded-lg border border-purple-200">
+                <p class="text-xs font-medium text-gray-600">গড় সেশন</p>
+                <p id="history-avg-session" class="text-2xl font-bold text-purple-600">0 মি</p>
+            </div>
+            <div class="bg-orange-50 p-4 rounded-lg border border-orange-200">
+                <p class="text-xs font-medium text-gray-600">সবচেয়ে দীর্ঘ</p>
+                <p id="history-longest-session" class="text-2xl font-bold text-orange-600">0 মি</p>
+            </div>
+        </div>
+        
+        <!-- Sessions Table -->
+        <div class="overflow-x-auto">
+            <table class="w-full text-sm border-collapse">
+                <thead>
+                    <tr class="bg-gray-50 border-b-2 border-gray-200">
+                        <th class="px-4 py-3 text-left font-medium text-gray-700">তারিখ</th>
+                        <th class="px-4 py-3 text-left font-medium text-gray-700">বিষয়/অধ্যায়</th>
+                        <th class="px-4 py-3 text-left font-medium text-gray-700">সময়</th>
+                        <th class="px-4 py-3 text-left font-medium text-gray-700">সময়কাল</th>
+                        <th class="px-4 py-3 text-center font-medium text-gray-700">অ্যাকশন</th>
+                    </tr>
+                </thead>
+                <tbody id="history-table-body">
+                    <tr>
+                        <td colspan="5" class="px-4 py-8 text-center text-gray-500">কোনো রেকর্ড নেই</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+        
+        <!-- Pagination -->
+        <div class="flex justify-between items-center mt-6">
+            <button id="history-prev-page" class="px-4 py-2 bg-gray-200 text-gray-800 rounded-lg hover:bg-gray-300 disabled:opacity-50">
+                পূর্ববর্তী
+            </button>
+            <span id="history-page-info" class="text-sm text-gray-600">পৃষ্ঠা 1 / 1</span>
+            <button id="history-next-page" class="px-4 py-2 bg-gray-200 text-gray-800 rounded-lg hover:bg-gray-300 disabled:opacity-50">
+                পরবর্তী
+            </button>
+        </div>
+        </div>
+        </div>
+
+
 
             </div>
 
@@ -656,6 +883,24 @@ type ReadingGoal @table {
                     weeklyGoalInput.value = goals.weeklyGoal || '';
                 }
             }, (error) => console.error("Goals Snapshot Error:", error));
+
+            function loadUserData() {
+    if (! userId) return;
+
+    // বিদ্যমান কোড... 
+
+    // ✅ Phase 1 ফিচার যুক্ত করুন:
+    onSnapshot(getUserCollectionRef('reading_sessions'), (snapshot) => {
+        allReadingSessions = snapshot.docs.map(doc => ({ id: doc.id, ... doc.data() }));
+        calculateAndRenderStats();
+        
+        // ✅ নতুন ফিচার:
+        calculateStreak();
+        updateCalendarData();
+        populateHistorySubjectFilter();
+        filterAndRenderHistory();
+    }, (error) => console.error("Sessions Snapshot Error:", error));
+        }
         }
         
         // --- বিষয় ও অধ্যায় ম্যানেজমেন্ট (১. ও ৩. এর জন্য) ---
@@ -1415,6 +1660,506 @@ initFirebase();
         description: "Read 20 pages daily"
       });
     }
+
+    // =========== PHASE 1: READING STREAKS, CALENDAR, HISTORY ===========
+
+// Global variables for Phase 1
+let allStreaks = [];
+let streakData = {};
+let calendarData = {};
+let currentCalendarDate = new Date();
+let historyCurrentPage = 1;
+let historyItemsPerPage = 10;
+let filteredSessions = [];
+
+// UI Elements for Streaks
+const currentStreakEl = document.getElementById('current-streak');
+const longestStreakEl = document.getElementById('longest-streak');
+const totalReadingDaysEl = document.getElementById('total-reading-days');
+const streakWarningEl = document.getElementById('streak-warning');
+const streakHistoryTable = document.getElementById('streak-history-table');
+
+// UI Elements for Calendar
+const calendarMonthYearEl = document.getElementById('calendar-month-year');
+const calendarGridEl = document.getElementById('calendar-grid');
+const prevMonthBtn = document.getElementById('prev-month-btn');
+const nextMonthBtn = document.getElementById('next-month-btn');
+const dayDetailsEl = document.getElementById('day-details');
+
+// UI Elements for History
+const historySubjectFilterEl = document.getElementById('history-subject-filter');
+const historyStartDateEl = document.getElementById('history-start-date');
+const historyEndDateEl = document.getElementById('history-end-date');
+const historyFilterBtn = document.getElementById('history-filter-btn');
+const historyTableBody = document. getElementById('history-table-body');
+const historyPrevPageBtn = document.getElementById('history-prev-page');
+const historyNextPageBtn = document.getElementById('history-next-page');
+const historyPageInfo = document.getElementById('history-page-info');
+const historyTotalSessions = document.getElementById('history-total-sessions');
+const historyTotalTime = document.getElementById('history-total-time');
+const historyAvgSession = document.getElementById('history-avg-session');
+const historyLongestSession = document.getElementById('history-longest-session');
+
+// ========== READING STREAKS LOGIC ==========
+
+/** গত পড়ার সময় চেক করুন এবং স্ট্রিক আপডেট করুন */
+function calculateStreak() {
+    if (allReadingSessions.length === 0) {
+        streakData = { current: 0, longest: 0, totalDays: 0, history: [] };
+        updateStreakDisplay();
+        return;
+    }
+
+    // সেশনগুলি তারিখ অনুসারে সাজান
+    const sortedSessions = [... allReadingSessions].sort((a, b) => {
+        const dateA = a.startTime?. toDate?. () || new Date(0);
+        const dateB = b.startTime?.toDate?.() || new Date(0);
+        return dateB - dateA;
+    });
+
+    // প্রতিটি দিনে অন্তত একবার পড়া হয়েছে কিনা চেক করুন
+    const readingDays = new Set();
+    sortedSessions.forEach(session => {
+        if (session.startTime?. toDate) {
+            const date = session. startTime.toDate();
+            const dateStr = date.toDateString();
+            readingDays.add(dateStr);
+        }
+    });
+
+    const uniqueDates = Array.from(readingDays)
+        .map(d => new Date(d))
+        .sort((a, b) => b - a);
+
+    // স্ট্রিক গণনা করুন
+    let currentStreak = 0;
+    let longestStreak = 0;
+    let tempStreak = 0;
+
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+
+    for (let i = 0; i < uniqueDates.length; i++) {
+        const currentDate = new Date(uniqueDates[i]);
+        currentDate.setHours(0, 0, 0, 0);
+
+        if (i === 0) {
+            // প্রথম তারিখ (সর্বশেষ)
+            const dayDiff = Math.floor((today - currentDate) / (1000 * 60 * 60 * 24));
+            if (dayDiff <= 1) {
+                // আজ বা গতকাল
+                currentStreak = 1;
+                tempStreak = 1;
+            } else {
+                currentStreak = 0;
+            }
+        } else {
+            const prevDate = new Date(uniqueDates[i - 1]);
+            prevDate.setHours(0, 0, 0, 0);
+
+            const dayDiff = Math.floor((prevDate - currentDate) / (1000 * 60 * 60 * 24));
+
+            if (dayDiff === 1) {
+                // পরপর দিন
+                tempStreak++;
+                if (i === 1) {
+                    currentStreak = tempStreak;
+                }
+            } else {
+                // স্ট্রিক ভাঙ্গলো
+                longestStreak = Math.max(longestStreak, tempStreak);
+                tempStreak = 1;
+            }
+        }
+    }
+
+    longestStreak = Math.max(longestStreak, tempStreak);
+    longestStreak = Math.max(longestStreak, currentStreak);
+
+    streakData = {
+        current: currentStreak,
+        longest: longestStreak,
+        totalDays: uniqueDates.length,
+        history: uniqueDates
+    };
+
+    updateStreakDisplay();
+    checkStreakWarning();
+}
+
+/** স্ট্রিক ডিসপ্লে আপডেট করুন */
+function updateStreakDisplay() {
+    currentStreakEl.textContent = streakData.current || 0;
+    longestStreakEl.textContent = streakData.longest || 0;
+    totalReadingDaysEl. textContent = streakData.totalDays || 0;
+}
+
+/** স্ট্রিক সতর্কতা চেক করুন */
+function checkStreakWarning() {
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+
+    const lastReadingDate = streakData.history? .[0];
+    if (! lastReadingDate) {
+        streakWarningEl.classList.add('hidden');
+        return;
+    }
+
+    const lastDate = new Date(lastReadingDate);
+    lastDate.setHours(0, 0, 0, 0);
+
+    const dayDiff = Math.floor((today - lastDate) / (1000 * 60 * 60 * 24));
+
+    if (dayDiff === 1 && streakData.current > 0) {
+        streakWarningEl.classList.remove('hidden');
+    } else {
+        streakWarningEl. classList.add('hidden');
+    }
+}
+
+// ========== READING CALENDAR LOGIC ==========
+
+/** ক্যালেন্ডার রেন্ডার করুন */
+function renderCalendar() {
+    const year = currentCalendarDate.getFullYear();
+    const month = currentCalendarDate.getMonth();
+
+    // মাস এবং বছর আপডেট করুন
+    const monthNames = ['জানুয়ারি', 'ফেব্রুয়ারি', 'মার্চ', 'এপ্রিল', 'মে', 'জুন', 'জুলাই', 'আগস্ট', 'সেপ্টেম্বর', 'অক্টোবর', 'নভেম্বর', 'ডিসেম্বর'];
+    calendarMonthYearEl.textContent = `${monthNames[month]} ${year}`;
+
+    // প্রথম দিন এবং দিন সংখ্যা পান
+    const firstDay = new Date(year, month, 1). getDay();
+    const daysInMonth = new Date(year, month + 1, 0). getDate();
+    const daysInPrevMonth = new Date(year, month, 0).getDate();
+
+    calendarGridEl.innerHTML = '';
+
+    // গত মাসের দিনগুলি (গ্রে)
+    for (let i = firstDay - 1; i >= 0; i--) {
+        const day = daysInPrevMonth - i;
+        const dayEl = createCalendarDayElement(day, 'prev', null);
+        calendarGridEl. appendChild(dayEl);
+    }
+
+    // বর্তমান মাসের দিনগুলি
+    for (let day = 1; day <= daysInMonth; day++) {
+        const dateStr = new Date(year, month, day).toDateString();
+        const readingTime = calendarData[dateStr]?.totalSeconds || 0;
+        const dayEl = createCalendarDayElement(day, 'current', { dateStr, readingTime });
+        calendarGridEl.appendChild(dayEl);
+    }
+
+    // পরবর্তী মাসের দিনগুলি (গ্রে)
+    const totalCells = calendarGridEl.children.length;
+    const remainingCells = 42 - totalCells; // 6 সপ্তাহ × 7 দিন
+    for (let day = 1; day <= remainingCells; day++) {
+        const dayEl = createCalendarDayElement(day, 'next', null);
+        calendarGridEl. appendChild(dayEl);
+    }
+}
+
+/** ক্যালেন্ডারের দিন উপাদান তৈরি করুন */
+function createCalendarDayElement(day, type, data) {
+    const dayEl = document.createElement('div');
+    dayEl.className = 'p-2 rounded text-center text-sm font-medium cursor-pointer transition';
+
+    if (type === 'prev' || type === 'next') {
+        dayEl.className += ' text-gray-400 bg-gray-100 opacity-50';
+        dayEl.textContent = day;
+    } else {
+        dayEl.textContent = day;
+
+        if (data. readingTime > 0) {
+            if (data.readingTime >= 60 * 60) { // >= 1 ঘণ্টা
+                dayEl.className += ' bg-green-500 text-white hover:bg-green-600';
+            } else {
+                dayEl.className += ' bg-yellow-400 text-white hover:bg-yellow-500';
+            }
+        } else {
+            dayEl.className += ' bg-red-400 text-white hover:bg-red-500';
+        }
+
+        dayEl.addEventListener('click', () => {
+            showDayDetails(data.dateStr);
+        });
+    }
+
+    return dayEl;
+}
+
+/** দিনের বিবরণ দেখান */
+function showDayDetails(dateStr) {
+    const dayData = calendarData[dateStr];
+    if (dayData) {
+        const hours = Math.floor(dayData.totalSeconds / 3600);
+        const minutes = Math.floor((dayData.totalSeconds % 3600) / 60);
+
+        document.getElementById('day-reading-time').innerHTML = 
+            `পড়ার সময়: <span class="font-semibold">${hours} ঘণ্টা ${minutes} মিনিট</span>`;
+        document.getElementById('day-sessions').innerHTML = 
+            `সেশন সংখ্যা: <span class="font-semibold">${dayData.sessions || 0}</span>`;
+
+        dayDetailsEl.classList.remove('hidden');
+    }
+}
+
+/** ক্যালেন্ডার ডেটা আপডেট করুন */
+function updateCalendarData() {
+    calendarData = {};
+
+    allReadingSessions.forEach(session => {
+        if (session.startTime?. toDate) {
+            const date = session.startTime.toDate();
+            const dateStr = date.toDateString();
+
+            if (!calendarData[dateStr]) {
+                calendarData[dateStr] = { totalSeconds: 0, sessions: 0 };
+            }
+
+            calendarData[dateStr].totalSeconds += session. durationSeconds || 0;
+            calendarData[dateStr].sessions += 1;
+        }
+    });
+
+    renderCalendar();
+}
+
+// ========== READING HISTORY LOGIC ==========
+
+/** ইতিহাস ফিল্টার এবং রেন্ডার করুন */
+function filterAndRenderHistory() {
+    const subjectFilter = historySubjectFilterEl.value;
+    const startDate = historyStartDateEl.value ?  new Date(historyStartDateEl.value) : null;
+    const endDate = historyEndDateEl.value ? new Date(historyEndDateEl. value) : null;
+
+    // ফিল্টার প্রয়োগ করুন
+    filteredSessions = allReadingSessions.filter(session => {
+        // বিষয় ফিল্টার
+        if (subjectFilter && session.subjectChapter !== subjectFilter) {
+            return false;
+        }
+
+        // তারিখ ফিল্টার
+        if (session.startTime?.toDate) {
+            const sessionDate = session.startTime.toDate();
+            if (startDate && sessionDate < startDate) return false;
+            if (endDate) {
+                endDate.setHours(23, 59, 59, 999);
+                if (sessionDate > endDate) return false;
+            }
+        }
+
+        return true;
+    });
+
+    // সাজান (সর্বশেষ প্রথম)
+    filteredSessions.sort((a, b) => {
+        const dateA = a.startTime?.toDate?. () || new Date(0);
+        const dateB = b.startTime?.toDate?.() || new Date(0);
+        return dateB - dateA;
+    });
+
+    // পরিসংখ্যান আপডেট করুন
+    updateHistoryStats();
+
+    // পেজ রিসেট করুন এবং রেন্ডার করুন
+    historyCurrentPage = 1;
+    renderHistoryTable();
+}
+
+/** ইতিহাস পরিসংখ্যান আপডেট করুন */
+function updateHistoryStats() {
+    if (filteredSessions.length === 0) {
+        historyTotalSessions.textContent = '0';
+        historyTotalTime.textContent = '0 ঘ';
+        historyAvgSession.textContent = '0 মি';
+        historyLongestSession.textContent = '0 মি';
+        return;
+    }
+
+    let totalSeconds = 0;
+    let maxSeconds = 0;
+
+    filteredSessions.forEach(session => {
+        const duration = session.durationSeconds || 0;
+        totalSeconds += duration;
+        maxSeconds = Math. max(maxSeconds, duration);
+    });
+
+    const totalHours = Math.floor(totalSeconds / 3600);
+    const avgMinutes = Math.floor(totalSeconds / 60 / filteredSessions.length);
+    const maxMinutes = Math.floor(maxSeconds / 60);
+
+    historyTotalSessions.textContent = filteredSessions.length;
+    historyTotalTime.textContent = `${totalHours} ঘ`;
+    historyAvgSession. textContent = `${avgMinutes} মি`;
+    historyLongestSession.textContent = `${maxMinutes} মি`;
+}
+
+/** ইতিহাস টেবিল রেন্ডার করুন */
+function renderHistoryTable() {
+    if (filteredSessions.length === 0) {
+        historyTableBody.innerHTML = '<tr><td colspan="5" class="px-4 py-8 text-center text-gray-500">কোনো রেকর্ড নেই</td></tr>';
+        historyPrevPageBtn.disabled = true;
+        historyNextPageBtn.disabled = true;
+        return;
+    }
+
+    const startIdx = (historyCurrentPage - 1) * historyItemsPerPage;
+    const endIdx = startIdx + historyItemsPerPage;
+    const paginatedSessions = filteredSessions.slice(startIdx, endIdx);
+
+    historyTableBody.innerHTML = '';
+
+    paginatedSessions.forEach((session, idx) => {
+        const date = session.startTime?.toDate ?  session.startTime.toDate() : new Date();
+        const duration = session.durationSeconds || 0;
+        const minutes = Math.floor(duration / 60);
+        const seconds = duration % 60;
+        const startTime = date.toLocaleTimeString('bn-BD', { hour: '2-digit', minute: '2-digit' });
+
+        // বিষয় নাম পান
+        let subjectName = session.subjectChapter;
+        if (session.subjectChapter?. includes('_')) {
+            const [subjectId, chapterIdx] = session.subjectChapter.split('_');
+            const subject = allSubjects.find(s => s.id === subjectId);
+            if (subject) {
+                subjectName = `${subject.name} > ${subject.chapters? .[chapterIdx] || 'অধ্যায়'}`;
+            }
+        }
+
+        const row = `
+            <tr class="border-b border-gray-200 hover:bg-gray-50">
+                <td class="px-4 py-3 text-sm">${date.toLocaleDateString('bn-BD')}</td>
+                <td class="px-4 py-3 text-sm text-gray-700">${subjectName}</td>
+                <td class="px-4 py-3 text-sm">${startTime}</td>
+                <td class="px-4 py-3 text-sm font-medium">${minutes}মি ${seconds}স</td>
+                <td class="px-4 py-3 text-center">
+                    <button class="text-red-500 hover:text-red-700 text-xs font-medium delete-history-btn" data-session-id="${session.id}">
+                        মুছুন
+                    </button>
+                </td>
+            </tr>
+        `;
+        historyTableBody.insertAdjacentHTML('beforeend', row);
+    });
+
+    // মুছার বাটন ইভেন্ট যোগ করুন
+    document.querySelectorAll('.delete-history-btn').forEach(btn => {
+        btn.addEventListener('click', async (e) => {
+            const sessionId = e.target.dataset.sessionId;
+            deleteHistorySession(sessionId);
+        });
+    });
+
+    // পেজিনেশন আপডেট করুন
+    const totalPages = Math.ceil(filteredSessions.length / historyItemsPerPage);
+    historyPageInfo.textContent = `পৃষ্ঠা ${historyCurrentPage} / ${totalPages}`;
+    historyPrevPageBtn.disabled = historyCurrentPage === 1;
+    historyNextPageBtn. disabled = historyCurrentPage === totalPages;
+}
+
+/** ইতিহাস সেশন মুছুন */
+async function deleteHistorySession(sessionId) {
+    showModal('নিশ্চিত করুন', 'এই সেশনটি মুছে ফেলতে চান?', true, async () => {
+        try {
+            await deleteDoc(doc(getUserCollectionRef('reading_sessions'), sessionId));
+            showModal('সফল', 'সেশনটি মুছে ফেলা হয়েছে।', false);
+        } catch (error) {
+            console.error('Error deleting session:', error);
+            showModal('ত্রুটি', 'সেশন মুছতে ব্যর্থ হয়েছে।', false);
+        }
+    });
+}
+
+// ========== EVENT LISTENERS ==========
+
+// Calendar Navigation
+prevMonthBtn.addEventListener('click', () => {
+    currentCalendarDate.setMonth(currentCalendarDate.getMonth() - 1);
+    renderCalendar();
+});
+
+nextMonthBtn.addEventListener('click', () => {
+    currentCalendarDate.setMonth(currentCalendarDate.getMonth() + 1);
+    renderCalendar();
+});
+
+// History Filter
+historyFilterBtn.addEventListener('click', filterAndRenderHistory);
+
+historyPrevPageBtn.addEventListener('click', () => {
+    if (historyCurrentPage > 1) {
+        historyCurrentPage--;
+        renderHistoryTable();
+    }
+});
+
+historyNextPageBtn.addEventListener('click', () => {
+    const totalPages = Math.ceil(filteredSessions.length / historyItemsPerPage);
+    if (historyCurrentPage < totalPages) {
+        historyCurrentPage++;
+        renderHistoryTable();
+    }
+});
+
+// Populate subject filter
+function populateHistorySubjectFilter() {
+    historySubjectFilterEl.innerHTML = '<option value="">সব বিষয়</option>';
+    allSubjects.forEach(subject => {
+        historySubjectFilterEl.insertAdjacentHTML('beforeend', 
+            `<option value="${subject.id}">${subject.name}</option>`
+        );
+    });
+}
+
+// ========== INTEGRATION WITH EXISTING CODE ==========
+
+// loadUserData() এর মধ্যে এই লাইন যোগ করুন:
+// calculateStreak();
+// updateCalendarData();
+// populateHistorySubjectFilter();
+// filterAndRenderHistory();
+
+// calculateAndRenderStats() এর পরে কল করুন:
+// calculateStreak();
+// updateCalendarData();
+// filterAndRenderHistory();
+
+// ========== TAB NAVIGATION ==========
+document.querySelectorAll('.tab-button').forEach(btn => {
+    btn.addEventListener('click', () => {
+        const viewName = btn.dataset.view;
+        
+        // সব ভিউ লুকান
+        document.querySelectorAll('.view-content').forEach(el => el.classList.add('hidden'));
+        
+        // নির্বাচিত ভিউ দেখান
+        const selectedView = document.getElementById(viewName);
+        if (selectedView) {
+            selectedView. classList.remove('hidden');
+        }
+        
+        // সব ট্যাব ডিঅ্যাক্টিভ করুন
+        document.querySelectorAll('.tab-button').forEach(b => {
+            b.classList.remove('border-b-2', 'border-indigo-500', 'text-indigo-600');
+            b.classList.add('text-gray-500', 'hover:text-gray-700');
+        });
+        
+        // এই ট্যাব অ্যাক্টিভ করুন
+        btn.classList.remove('text-gray-500', 'hover:text-gray-700');
+        btn.classList.add('border-b-2', 'border-indigo-500', 'text-indigo-600');
+        
+        // Lucide আইকন রেন্ডার করুন
+        lucide. createIcons();
+    });
+});
+
+// Dashboard ট্যাব default select করুন
+document.querySelector('[data-view="dashboard"]'). click();
+
+
   </script>
 
 
