@@ -280,7 +280,7 @@
             apiKey: "AIzaSyBcs_LrxMA_aXlZZoQ7SsLztjYU5YktEo8",
             authDomain: "readingprogressapp.firebaseapp.com",
             projectId: "readingprogressapp",
-            storageBucket: "readingprogressapp.firebasestorage.app",
+            storageBucket: "readingprogressapp.appspot.com",  // Change . firebasestorage.app to . appspot.com",
             messagingSenderId: "212134190518",
             appId: "1:212134190518:web:995a883889f375fc9e7517",
             measurementId: "G-95XJF5XGB5"
@@ -452,6 +452,123 @@
                 loadingSpinner.innerHTML = `<p class="text-red-600">ত্রুটি: Firebase লোড করা যায়নি। কনসোল দেখুন।</p>`;
             }
         }
+
+        // --- অ্যাডমিন ডেটা লোড করা (সকল ব্যবহারকারীর পরিসংখ্যান) ---
+
+async function loadAdminData() {
+    try {
+        // ১. সকল ব্যবহারকারী সংখ্যা বের করা
+        const usersSnapshot = await getDocs(collection(db, 'users'));
+        const allUsers = usersSnapshot.docs. map(d => d.id).filter(uid => uid !== ADMIN_UID);
+        
+        // Admin user count এ দেখানো
+        adminUserCount. textContent = allUsers.length;
+
+        // ২. সকল ব্যবহারকারীর মোট পড়ার সময় এবং রিপোর্ট
+        let totalHours = 0;
+        let lastActivityDates = [];
+        const userReportData = [];
+
+        for (const uId of allUsers) {
+            try {
+                // প্রতিটি ইউজারের reading_sessions লোড করা
+                const sessionsQuery = query(
+                    collection(db, `users/${uId}/reading_sessions`)
+                );
+                const sessionsSnapshot = await getDocs(sessionsQuery);
+                
+                let userTotalSeconds = 0;
+                let userLastActivity = new Date(0); // সবচেয়ে পুরানো সময়
+
+                sessionsSnapshot.docs.forEach(doc => {
+                    const session = doc.data();
+                    userTotalSeconds += session. durationSeconds || 0;
+                    
+                    if (session.startTime && session.startTime. toDate) {
+                        const sessionDate = session.startTime.toDate();
+                        if (sessionDate > userLastActivity) {
+                            userLastActivity = sessionDate;
+                        }
+                    }
+                });
+
+                totalHours += userTotalSeconds / 3600; // সেকেন্ড থেকে ঘণ্টায় রূপান্তর
+                
+                // ইউজার রিপোর্ট ডেটা সংরক্ষণ
+                userReportData.push({
+                    userId: uId,
+                    totalHours: (userTotalSeconds / 3600). toFixed(2),
+                    lastActivity: userLastActivity.toDateString()
+                });
+
+                lastActivityDates.push(userLastActivity);
+
+            } catch (error) {
+                console.error(`Error loading sessions for user ${uId}:`, error);
+            }
+        }
+
+        // ৩. মোট পড়ার সময় আপডেট করা
+        adminTotalHours.textContent = totalHours. toFixed(2);
+
+        // ৪. সাপ্তাহিক গড় বের করা
+        const now = new Date();
+        const startOfWeek = getStartOfWeek(now);
+        let weeklyTotalSeconds = 0;
+
+        for (const uId of allUsers) {
+            const sessionsQuery = query(
+                collection(db, `users/${uId}/reading_sessions`)
+            );
+            const sessionsSnapshot = await getDocs(sessionsQuery);
+
+            sessionsSnapshot.docs.forEach(doc => {
+                const session = doc.data();
+                if (session.startTime && session. startTime.toDate) {
+                    const sessionDate = session. startTime.toDate();
+                    if (sessionDate >= startOfWeek) {
+                        weeklyTotalSeconds += session.durationSeconds || 0;
+                    }
+                }
+            });
+        }
+
+        const weeklyAverage = allUsers.length > 0 
+            ? (weeklyTotalSeconds / 3600 / allUsers.length).toFixed(2) 
+            : 0;
+        adminWeeklyAvg.textContent = weeklyAverage;
+
+        // ৫. ব্যবহারকারী কার্যকলাপ টেবিল রেন্ডার করা
+        adminUserReportTable.innerHTML = '';
+        
+        if (userReportData.length === 0) {
+            adminUserReportTable.innerHTML = `
+                <tr>
+                    <td colspan="3" class="px-6 py-4 text-center text-gray-500">কোনো ব্যবহারকারী ডেটা পাওয়া যায়নি</td>
+                </tr>
+            `;
+            return;
+        }
+
+        // টেবিল রো তৈরি
+        userReportData.forEach(user => {
+            const row = `
+                <tr class="hover:bg-gray-50">
+                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 font-mono">${user.userId. substring(0, 10)}...</td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">${user.totalHours} ঘণ্টা</td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-600">${user.lastActivity}</td>
+                </tr>
+            `;
+            adminUserReportTable.insertAdjacentHTML('beforeend', row);
+        });
+
+    } catch (error) {
+        console.error("Error loading admin data:", error);
+        showModal('ত্রুটি', 'অ্যাডমিন ডেটা লোড করা যায়নি।', false);
+    }
+}
+
+
         
         // লগইন/সাইনআপ টগল
         toggleAuthModeButton.addEventListener('click', () => {
@@ -491,32 +608,7 @@
                 showModal('ত্রুটি', 'লগআউট করা সম্ভব হয়নি।', false);
             }
         });
-        type User @table {
-  email: String!
-  createdAt: Timestamp!
-  displayName: String
-  photoUrl: String
-}
-
-type Book @table {
-  title: String!
-  author: String!
-  totalPages: Int!
-  coverImageUrl: String
-  description: String
-  genre: String
-}
-
-type ReadingSession @table {
-  user: User!
-  book: Book!
-  startDate: Timestamp!
-  currentPage: Int!
-  status: String!
-  endDate: Timestamp
-  currentPercentage: Float
-  notes: String
-}
+        
 
 type ReadingGoal @table {
   user: User!
@@ -1108,6 +1200,37 @@ type ReadingGoal @table {
             }
         }
 
+        // --- ট্যাব নেভিগেশন (ড্যাশবোর্ড, বিষয়, অ্যাডমিন) ---
+
+document.querySelectorAll('.tab-button').forEach(btn => {
+    btn.addEventListener('click', (e) => {
+        const viewName = e.target.dataset.view;
+        
+        // সকল ভিউ লুকানো
+        document.querySelectorAll('.view-content').forEach(el => {
+            el.classList.add('hidden');
+        });
+        
+        // নির্বাচিত ভিউ দেখানো
+        const viewElement = document.getElementById(`${viewName}-view`);
+        if (viewElement) {
+            viewElement.classList.remove('hidden');
+        }
+        
+        // ট্যাব স্টাইল আপডেট করা
+        document.querySelectorAll('.tab-button').forEach(b => {
+            b.classList.remove('border-b-2', 'border-indigo-500', 'text-indigo-600');
+            b.classList.add('text-gray-500');
+        });
+        
+        btn.classList.remove('text-gray-500');
+        btn.classList.add('border-b-2', 'border-indigo-500', 'text-indigo-600');
+    });
+});
+
+// Firebase এবং ডেটা লোড করার জন্য initFirebase() কল করা
+initFirebase();
+
         function renderAdminReportTable(reports) {
             adminUserReportTable.innerHTML = '';
             reports.sort((a, b) => parseFloat(b.totalHours) - parseFloat(a.totalHours)); // মোট সময় অনুযায়ী সর্ট করা
@@ -1173,7 +1296,7 @@ type ReadingGoal @table {
       apiKey: "AIzaSyBcs_LrxMA_aXlZZoQ7SsLztjYU5YktEo8",
       authDomain: "readingprogressapp.firebaseapp.com",
       projectId: "readingprogressapp",
-      storageBucket: "readingprogressapp.firebasestorage.app",
+      storageBucket: "readingprogressapp.appspot.com",  // Change . firebasestorage.app to . appspot.com
       messagingSenderId: "212134190518",
       appId: "1:212134190518:web:995a883889f375fc9e7517",
       measurementId: "G-95XJF5XGB5"
